@@ -169,12 +169,16 @@ export default function NextScreen() {
                   ? 'Start with any day you like. The rotation carries on from there.'
                   : 'Do a different day instead. The rotation carries on from whatever you do.'}
               </Muted>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
                 {rotationFor(settings).map((id) => day(id)).map((d) => (
-                  <Chip key={d.id} label={d.name} selected={d.id === plan.day.id} onPress={() => chooseDay(d.id)} />
+                  <Chip key={d.id} fill label={d.name} selected={d.id === plan.day.id} onPress={() => chooseDay(d.id)} />
                 ))}
-                {settings.nextDayOverride && <Chip label="Back to the rotation" onPress={() => chooseDay(null)} />}
               </View>
+              {settings.nextDayOverride && (
+                <View style={{ flexDirection: 'row' }}>
+                  <Chip label="Back to the rotation" onPress={() => chooseDay(null)} />
+                </View>
+              )}
             </>
           ) : (
             <Button title="Do a different day" kind="plain" onPress={() => setChoosing(true)} />
