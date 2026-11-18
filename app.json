@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Lift (working title)",
-    "slug": "lift-new",
+    "name": "Every Set Counts",
+    "slug": "every-set-counts",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "liftnew",
+    "scheme": "everysetcounts",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
     "runtimeVersion": {
