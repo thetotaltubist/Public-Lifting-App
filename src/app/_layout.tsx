@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { hideSplash } from '../splash';
 import { startLaunchUpdateCheck } from '../updates';
 import { colors, hexColors } from '../theme';
+import { renderBackButton, renderNoButton } from '../components/BackButton';
 
 export default function RootLayout() {
   const scheme = useColorScheme() === 'light' ? 'light' : 'dark';
@@ -19,10 +20,9 @@ export default function RootLayout() {
       headerTintColor: hex.accent,
       headerTitleStyle: { color: hex.text },
       headerShadowVisible: false,
-      // A fixed "Back" label, so iOS never works one out from the previous
-      // screen (which showed "(tabs)" and redrew the button as it changed)
-      headerBackTitle: 'Back',
-      headerBackButtonMenuEnabled: false,
+      // Our own back arrow in place of iOS's, which flashed on open
+      headerBackVisible: false,
+      headerLeft: renderBackButton,
     };
   }, [scheme]);
 
@@ -35,7 +35,7 @@ export default function RootLayout() {
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={screenOptions}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
-        <Stack.Screen name="workout" options={{ title: 'Workout', gestureEnabled: false, headerBackVisible: false }} />
+        <Stack.Screen name="workout" options={{ title: 'Workout', gestureEnabled: false, headerLeft: renderNoButton }} />
         <Stack.Screen name="science" options={{ title: 'Why this works' }} />
         <Stack.Screen name="program" options={{ title: 'Exercises' }} />
         <Stack.Screen name="new-block" options={{ title: 'New block' }} />
