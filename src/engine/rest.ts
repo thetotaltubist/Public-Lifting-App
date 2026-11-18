@@ -27,3 +27,27 @@ export function formatClock(seconds: number) {
   const s = Math.max(0, Math.ceil(seconds));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
+
+// ------------------------------------------------------------------
+// About how long a workout takes, rest included. Each set is about 45
+// seconds of work, each exercise about 90 seconds to set up and warm
+// up, and the rest between sets is the suggested rest above. Rounded
+// to the nearest 5 minutes, since it's only a guide.
+// ------------------------------------------------------------------
+
+export const SET_SECONDS = 45;
+export const SETUP_SECONDS = 90;
+
+export function estimateMinutes(
+  items: { exercise: Exercise; sets: number; repMin?: number }[],
+  deload: boolean,
+  goal: Goal = 'hypertrophy'
+) {
+  let seconds = 0;
+  for (const { exercise, sets, repMin } of items) {
+    if (sets <= 0) continue;
+    const e = repMin != null ? { ...exercise, repMin } : exercise;
+    seconds += SETUP_SECONDS + sets * SET_SECONDS + (sets - 1) * restSeconds(e, null, deload, goal);
+  }
+  return Math.max(5, Math.round(seconds / 300) * 5);
+}

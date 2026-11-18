@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Badge, Button, Card, Chip, Muted, styles, Title } from '../../components/ui';
 import { day, exercise } from '../../engine/exercises';
-import { deloadSuggestion, Plan, planNext, rotationFor } from '../../engine/plan';
+import { deloadSuggestion, Plan, planMinutes, planNext, rotationFor } from '../../engine/plan';
 import { programFor } from '../../engine/programs';
 import { Session, Settings } from '../../engine/types';
 import { loadActive, loadSessions, loadSettings, saveActive, toDisplay, updateSettings } from '../../storage';
@@ -94,7 +94,7 @@ export default function NextScreen() {
         <Muted>{plan.deload ? 'Deload week' : `Block week ${plan.blockWeek + 1}`} · {programFor(settings).name} · {settings.mode === 'cut' ? 'Cut' : 'Build'}</Muted>
         <Title>Today: {plan.day.name}</Title>
         <Muted style={{ marginBottom: 14 }}>
-          {plan.exercises.length} exercises · {totalSets} sets
+          {plan.exercises.length} exercises · {totalSets} sets · about {planMinutes(plan, settings)} min
         </Muted>
 
         {hasActive && (

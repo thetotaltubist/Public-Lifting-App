@@ -8,7 +8,7 @@ import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { alternativesFor, exercise, painAreasFor } from '../engine/exercises';
 import { goalFor, withGoalReps } from '../engine/programs';
 import { suggest } from '../engine/progression';
-import { restReason, restSeconds } from '../engine/rest';
+import { estimateMinutes, restReason, restSeconds } from '../engine/rest';
 import { cancelRestAlert, scheduleRestAlert } from '../restAlert';
 import { LoggedExercise, LoggedSet, Session, Settings } from '../engine/types';
 import {
@@ -259,10 +259,20 @@ export default function WorkoutScreen() {
     ]);
   }
 
+  // About how long is left, from the sets not yet ticked off (see rest.ts)
+  function timeLeft() {
+    const items = active!.exercises.map((ex, i) => ({ exercise: liftFor(i, ex.exerciseId), sets: ex.sets.filter((x) => !x.done).length }));
+    if (items.every((x) => x.sets === 0)) return 'All sets done';
+    const minutes = estimateMinutes(items, active!.deload, goal);
+    const started = active!.exercises.some((ex) => ex.sets.some((x) => x.done));
+    return started ? `About ${minutes} min left` : `About ${minutes} min, rest included`;
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={90}>
       <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
-        <Text style={[styles.h2, { fontSize: 24, marginBottom: 12 }]}>{active.plan.day.name}</Text>
+        <Text style={[styles.h2, { fontSize: 24 }]}>{active.plan.day.name}</Text>
+        <Muted style={{ marginBottom: 12 }}>{timeLeft()}</Muted>
         {active.exercises.map((ex, i) => {
           const e = liftFor(i, ex.exerciseId);
           const planned = active.plan.exercises[i];

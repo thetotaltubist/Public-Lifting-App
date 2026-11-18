@@ -2,6 +2,7 @@ import { DAYS, day, exercise } from './exercises';
 import { catchUpPause, HealthData } from './health';
 import { daysFor, goalFor, programFor, withGoalReps } from './programs';
 import { suggest, Suggestion } from './progression';
+import { estimateMinutes } from './rest';
 import { DAY_MS, addCredit, creditFor, rollingVolume, targetFor } from './volume';
 import { DayTemplate, Goal, Muscle, Session, Settings } from './types';
 
@@ -241,4 +242,10 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
   if (caught > 0) notes.push(`${caught} catch-up ${caught === 1 ? 'set' : 'sets'} added for muscles that fell behind this week.`);
 
   return { day: template, exercises, blockWeek: week, deload, comeback, notes };
+}
+
+// About how long today's workout takes, rest included (see rest.ts)
+export function planMinutes(plan: Plan, settings: Settings) {
+  const items = plan.exercises.map((p) => ({ exercise: exercise(p.exerciseId), sets: p.sets, repMin: p.repMin }));
+  return estimateMinutes(items, plan.deload, goalFor(settings));
 }

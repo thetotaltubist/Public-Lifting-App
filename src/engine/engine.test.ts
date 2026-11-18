@@ -8,7 +8,7 @@ import { estimate1RM, weightForReps } from './oneRm';
 import { suggest } from './progression';
 import { weeklyRecap } from './recap';
 import { rollingVolume, targetFor, weeklyTarget } from './volume';
-import { formatClock, restSeconds } from './rest';
+import { estimateMinutes, formatClock, restSeconds } from './rest';
 import { HealthData, proteinTarget, shortNightStreak, weightTrend } from './health';
 import { backupFileName, makeBackup, readBackup } from './backup';
 import { Session, Settings } from './types';
@@ -473,4 +473,15 @@ test('a backup round-trips, and bad files change nothing', () => {
   assert.match((readBackup(JSON.stringify({ ...JSON.parse(raw), version: 99 })) as { error: string }).error, /newer version/);
   assert.ok('error' in readBackup(JSON.stringify({ ...JSON.parse(raw), sessions: null })));
   assert.equal(backupFileName(new Date(2026, 0, 5)), 'lifting-backup-2026-01-05.json');
+});
+
+test('workout time: rest, sets and setup, rounded to 5 minutes', () => {
+  // 3 sets of a compound: 90 + 3*45 + 2*150 = 525s, about 10 min
+  assert.equal(estimateMinutes([{ exercise: exercise('lat-pulldown'), sets: 3 }], false), 10);
+  // Plus an isolation exercise: 90 + 3*45 + 2*90 = 405s more, 930s in all, about 15 min
+  assert.equal(
+    estimateMinutes([{ exercise: exercise('lat-pulldown'), sets: 3 }, { exercise: exercise('pec-deck'), sets: 3 }], false),
+    15
+  );
+  assert.equal(estimateMinutes([], false), 5);
 });
