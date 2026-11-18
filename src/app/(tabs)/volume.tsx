@@ -53,7 +53,12 @@ export default function VolumeScreen() {
               <Text style={[styles.title, { fontSize: 36, marginBottom: 0 }]}>{percent}%</Text>
               <Muted>of this week&apos;s sets done</Muted>
             </View>
-            {percent >= 100 ? <Badge tone="gold" label="All done" /> : <Badge tone="gold" label="Rolling 7 days" />}
+            <View style={{ alignItems: 'flex-end', maxWidth: 150 }}>
+              {percent >= 100 ? <Badge tone="gold" label="All done" /> : <Badge tone="gold" label="Rolling 7 days" />}
+              <Text style={{ color: colors.muted, fontSize: 11, lineHeight: 14, textAlign: 'right', marginTop: 6 }}>
+                Today and the 6 days before. No Monday reset: sets drop off a week after you do them.
+              </Text>
+            </View>
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
             {rows.map((r) => (
