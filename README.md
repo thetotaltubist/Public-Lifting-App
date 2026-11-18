@@ -7,9 +7,9 @@ Started from Mayg & Jaown (John's personal app), keeping the training engine and
 ## What it does
 
 - **Quick setup.** The first time it opens, one screen asks the goal, days a week, cut or build, units and whether to ask about pain, then suggests a program.
-- **Next workout, no calendar.** The app always shows the next day in the rotation, whatever day of the week it is. "Do a different day" lets you jump around.
+- **Today: next workout, no calendar.** The app always shows the next day in the rotation, whatever day of the week it is. "Do a different day" lets you jump around.
 - **Programs and goals.** Settings → Start a new block asks the goal (strength, hypertrophy or endurance) and how many days a week you'll lift (2-6), then suggests the programs that fit: Full body (2-3 days), 5x5 (3 days, strength), Upper / Lower (4), 5-day hybrid, Push / Pull / Legs (5-6) and Bro split (5-6). The goal sets reps, rest, reps in reserve and weekly sets.
-- **Rolling 7-day volume.** Hard sets per muscle over the last 7 days against a weekly target. Sets for helper muscles count as half.
+- **Week: rolling 7-day volume.** A ring per muscle and a "Still owed" line. Hard sets per muscle over the last 7 days against a weekly target. Sets for helper muscles count as half.
 - **Catch-up.** If a muscle falls behind (missed days, or fewer days than planned), upcoming sessions add up to 3 catch-up sets for it, capped at 10 sets per muscle per session. After 3+ days off, the first session back is normal volume.
 - **Progressive overload.** Double progression: hit the top of the rep range on every set, then the weight goes up. A new block with a different rep range starts from an estimated 1 rep max.
 - **1 rep max calculator** in Settings.
@@ -17,7 +17,7 @@ Started from Mayg & Jaown (John's personal app), keeping the training engine and
 - **Cut / Build modes** and **4-week ramping blocks**, with a deload suggested when lifts stall.
 - **Apple Health (Body tab), weight and sleep only.** Losing more than 1% a week pauses catch-up sets and suggests eating more, protein first. Three nights under 6 hours skips catch-up sets. Read-only.
 - **Rest timer** with a notification when it's up.
-- "How the plan works" lists the research behind each rule.
+- "Why this works" lists the research behind each rule, with PubMed links.
 
 Everything is stored on the phone. Settings → Backup saves every workout and setting to one file (Files, iCloud Drive, AirDrop or email), and restores it on a new phone.
 

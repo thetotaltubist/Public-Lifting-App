@@ -12,8 +12,8 @@ import { Chip, Muted } from './ui';
 // ------------------------------------------------------------------
 
 // Checked with the dataviz palette validator against the card surface
-const LINE = { light: '#D9480F', dark: '#E8612A' };
-const DOT = { light: '#A9A7A1', dark: '#6E6D72' };
+const LINE = { light: '#C9A35C', dark: '#C9A35C' };
+const DOT = { light: '#A9AFA8', dark: '#6C7A70' };
 
 const HEIGHT = 190;
 const LEFT = 40; // room for the weight labels

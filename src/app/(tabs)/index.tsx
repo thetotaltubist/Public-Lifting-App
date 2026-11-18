@@ -92,7 +92,7 @@ export default function NextScreen() {
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <ScrollView contentContainerStyle={styles.screen}>
         <Muted>{plan.deload ? 'Deload week' : `Block week ${plan.blockWeek + 1}`} · {programFor(settings).name} · {settings.mode === 'cut' ? 'Cut' : 'Build'}</Muted>
-        <Title>{plan.day.name}</Title>
+        <Title>Today: {plan.day.name}</Title>
         <Muted style={{ marginBottom: 14 }}>
           {plan.exercises.length} exercises · {totalSets} sets
         </Muted>
@@ -119,8 +119,15 @@ export default function NextScreen() {
         )}
 
         {plan.notes.map((n) => (
-          <Card key={n} style={{ backgroundColor: colors.accentSoft }}>
-            <Text style={styles.body}>{n}</Text>
+          <Card key={n} style={{ backgroundColor: colors.accentSoft, borderColor: colors.accentSoft }}>
+            <Text style={styles.body}>
+              {n}
+              {/catch-up|short nights/i.test(n) && (
+                <Text style={{ color: colors.goldText, fontWeight: '700' }} onPress={() => router.push('/science')}>
+                  {'  Why? ›'}
+                </Text>
+              )}
+            </Text>
           </Card>
         ))}
 
@@ -139,7 +146,7 @@ export default function NextScreen() {
             <Card key={e.templateExerciseId}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Text style={[styles.h2, { flex: 1, marginRight: 8 }]}>{ex.name}</Text>
-                {e.catchUpSets > 0 && <Badge tone="warn" label={`+${e.catchUpSets} catch-up`} />}
+                {e.catchUpSets > 0 && <Badge tone="gold" label={`+${e.catchUpSets} catch-up`} />}
               </View>
               <Text style={[styles.body, { marginTop: 4 }]}>
                 {e.sets} × {reps(e.repMin ?? ex.repMin, e.repMax ?? ex.repMax)}

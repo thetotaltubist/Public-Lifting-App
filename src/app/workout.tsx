@@ -281,7 +281,7 @@ export default function WorkoutScreen() {
                 </Muted>
                 {(ex.catchUpSets ?? 0) > 0 && (
                   <View style={{ marginLeft: 8 }}>
-                    <Badge tone="warn" label={`+${ex.catchUpSets} catch-up`} />
+                    <Badge tone="gold" label={`+${ex.catchUpSets} catch-up`} />
                   </View>
                 )}
               </View>
@@ -295,7 +295,16 @@ export default function WorkoutScreen() {
               </View>
               {ex.sets.map((s, j) => (
                 <View key={j} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, opacity: s.done ? 0.55 : 1 }}>
-                  <Text style={{ width: 26, color: colors.muted, fontWeight: '700' }}>{j + 1}</Text>
+                  {/* Catch-up sets are the last ones planned, shown in gold */}
+                  <Text
+                    style={{
+                      width: 26,
+                      fontWeight: '700',
+                      color:
+                        planned && j >= planned.sets - (ex.catchUpSets ?? 0) && j < planned.sets ? colors.gold : colors.muted,
+                    }}>
+                    {j + 1}
+                  </Text>
                   <WeightInput
                     value={s.weight}
                     unit={unit}
@@ -317,7 +326,7 @@ export default function WorkoutScreen() {
                         key={r}
                         onPress={() => changeSet(i, j, { rir: s.rir === r ? null : r })}
                         style={[rirChip, { backgroundColor: s.rir === r ? colors.accent : colors.chip }]}>
-                        <Text style={{ color: s.rir === r ? '#FFFFFF' : colors.text, fontWeight: '600', fontSize: 13 }}>
+                        <Text style={{ color: s.rir === r ? colors.onAccent : colors.text, fontWeight: '600', fontSize: 13 }}>
                           {r === 4 ? '4+' : r}
                         </Text>
                       </Pressable>
@@ -327,7 +336,7 @@ export default function WorkoutScreen() {
                     onPress={() => toggleDone(i, j)}
                     style={[checkBox, { backgroundColor: s.done ? colors.good : colors.chip }]}
                     hitSlop={6}>
-                    <Text style={{ color: s.done ? '#FFFFFF' : colors.muted, fontWeight: '800' }}>✓</Text>
+                    <Text style={{ color: s.done ? colors.onAccent : colors.muted, fontWeight: '800' }}>✓</Text>
                   </Pressable>
                 </View>
               ))}
@@ -357,7 +366,7 @@ export default function WorkoutScreen() {
                               ex.pain === n ? (n >= 5 ? colors.danger : n >= 3 ? colors.warn : colors.good) : colors.chip,
                           },
                         ]}>
-                        <Text style={{ color: ex.pain === n ? '#FFFFFF' : colors.text, fontWeight: '600' }}>{n}</Text>
+                        <Text style={{ color: ex.pain === n ? (n >= 3 ? '#FFFFFF' : colors.onAccent) : colors.text, fontWeight: '600' }}>{n}</Text>
                       </Pressable>
                     ))}
                   </View>

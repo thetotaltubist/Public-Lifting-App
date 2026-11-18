@@ -36,7 +36,7 @@ export default function WeekPie({ slices }: { slices: Slice[] }) {
             const a0 = i * step + GAP;
             const a1 = (i + 1) * step - GAP;
             const pct = Math.min(1, s.target ? s.have / s.target : 1);
-            const fill = pct >= 1 ? colors.good : colors.accent;
+            const fill = pct >= 1 ? colors.good : colors.gold;
             const mid = (a0 + a1) / 2;
             const lx = cx + (R + 14) * Math.sin(mid);
             const ly = cy - (R + 14) * Math.cos(mid);
