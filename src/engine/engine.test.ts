@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { alternativesFor, day, exercise, makeCustomExercise, painAreasFor, setCustomExercises } from './exercises';
-import { planNext, nextDayId, ROTATION, rotationFor } from './plan';
+import { planNext, nextDayId, ROTATION, rotationFor, stallCheck, stalledLifts } from './plan';
 import { PROGRAMS, suggestPrograms, withGoalReps } from './programs';
 import { estimate1RM, weightForReps } from './oneRm';
 import { suggest } from './progression';
@@ -484,4 +484,36 @@ test('workout time: rest, sets and setup, rounded to 5 minutes', () => {
     15
   );
   assert.equal(estimateMinutes([], false), 5);
+});
+
+test('stalls early in a block, or in a cut, get a recovery note, not a deload', () => {
+  let sessions: Session[] = [];
+  for (let d = 0; d < 18; d++) sessions = doSession(sessions, at(d), 8); // same weight and reps every time
+  const now = at(18);
+  const lifts = stalledLifts(sessions, settings, now);
+  assert.ok(lifts.length >= 3);
+  assert.equal(new Set(lifts).size, lifts.length); // each lift once
+
+  // Week 3, build: recovery note
+  const build = { ...settings, mode: 'build' as const };
+  const early = stallCheck(sessions, build, now);
+  assert.equal(early?.kind, 'recovery');
+  assert.match(early!.text, /adds a minute/);
+
+  // Week 5, build: a lighter week is worth considering
+  const later = { ...build, blockStart: at(-14).toISOString() };
+  assert.equal(stallCheck(sessions, later, now)?.kind, 'deload');
+
+  // Week 5, cut: still a recovery note
+  const cut = stallCheck(sessions, { ...later, mode: 'cut' }, now);
+  assert.equal(cut?.kind, 'recovery');
+  assert.match(cut!.text, /holding your weights is a win/);
+
+  // Week 7: a lighter week either way
+  assert.equal(stallCheck(sessions, { ...settings, blockStart: at(-30).toISOString() }, now)?.kind, 'deload');
+});
+
+test('a stuck lift gets an extra minute of rest', () => {
+  assert.equal(restSeconds(exercise('lat-pulldown'), 2, false, 'hypertrophy', true), 210);
+  assert.equal(restSeconds(exercise('lat-pulldown'), 2, true, 'hypertrophy', true), 120); // not on a deload
 });

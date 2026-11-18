@@ -164,7 +164,7 @@ export function suggest(
     weight,
     targetReps: Math.min(minReps + 1, e.repMax),
     why: stalled
-      ? 'Stuck at this weight for 3 sessions. That is normal in a cut. Hold it, and if nothing moves in two more sessions, swap the exercise.'
+      ? 'Stuck at this weight for 3 sessions. Hold it and take the extra minute of rest the timer gives you. If nothing moves in two more sessions, try a swap.'
       : `Same weight. Beat last time: aim for ${Math.min(minReps + 1, e.repMax)}+ reps on each set.`,
     swapSuggested: false,
     stalled,

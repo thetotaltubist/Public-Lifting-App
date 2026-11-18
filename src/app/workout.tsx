@@ -110,6 +110,12 @@ export default function WorkoutScreen() {
     return withGoalReps(id, goal);
   }
 
+  // Stuck lifts get an extra minute of rest (see stallCheck in plan.ts)
+  function isStalled(i: number, id: string) {
+    const p = active!.plan.exercises[i];
+    return !!p && p.exerciseId === id && !!p.suggestion.stalled;
+  }
+
   function changeExercise(i: number, change: (ex: LoggedExercise) => LoggedExercise) {
     setActive((a) => (a ? { ...a, exercises: a.exercises.map((ex, k) => (k === i ? change(ex) : ex)) } : a));
   }
@@ -149,8 +155,9 @@ export default function WorkoutScreen() {
       stopRest();
       return;
     }
-    const seconds = restSeconds(e, set.rir, active!.deload, goal);
-    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, set.rir, active!.deload, goal) });
+    const stuck = isStalled(i, ex.exerciseId);
+    const seconds = restSeconds(e, set.rir, active!.deload, goal, stuck);
+    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, set.rir, active!.deload, goal, stuck) });
     scheduleRestAlert(seconds, next);
   }
 
@@ -177,8 +184,9 @@ export default function WorkoutScreen() {
       return;
     }
     const e = liftFor(i, ex.exerciseId);
-    const seconds = restSeconds(e, last.rir, active!.deload, goal);
-    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, last.rir, active!.deload, goal) });
+    const stuck = isStalled(i, ex.exerciseId);
+    const seconds = restSeconds(e, last.rir, active!.deload, goal, stuck);
+    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, last.rir, active!.deload, goal, stuck) });
     scheduleRestAlert(seconds, next);
   }
 

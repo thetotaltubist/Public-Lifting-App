@@ -81,7 +81,7 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     title: 'Rest between sets',
     strength: 'Moderate',
     body:
-      'Resting 2 minutes or more on big lifts lets you keep your reps up, which adds up to more growth than short rest. For isolation work, rest beyond about 90 seconds adds little. The timer suggests 3 minutes for heavy compounds, 2:30 for other compounds and 1:30 for isolation, adding 30 seconds after a set to failure.',
+      'Resting 2 minutes or more on big lifts lets you keep your reps up, which adds up to more growth than short rest. For isolation work, rest beyond about 90 seconds adds little. The timer suggests 3 minutes for heavy compounds, 2:30 for other compounds and 1:30 for isolation, adding 30 seconds after a set to failure and a minute on a lift that has stalled.',
   },
   {
     title: 'Progression',
@@ -99,13 +99,19 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     title: 'Deloads',
     strength: 'Emerging',
     body:
-      'A scheduled deload week did not add muscle in a controlled trial, so the app does not force one. It suggests one when several lifts stall or the block runs long, and you decide.',
+      'A scheduled deload week did not add muscle in a controlled trial, and coaches now favour deloading when needed rather than on a timer, most often every 4 to 6 weeks. So the app never forces one. It suggests one from week 5 of a block if 3 or more lifts have stalled, or once a block reaches week 7, and you decide. In a cut it only suggests one for a long block, since stalls there are expected.',
   },
   {
     title: 'Rate of weight loss',
     strength: 'Moderate',
     body:
       'Losing about 0.5 to 1% of body weight a week keeps more muscle than losing faster. The Body tab tracks your 7-day average from Apple Health. Above 1% a week, the app tells you to eat more and pauses catch-up sets.',
+  },
+  {
+    title: 'Stalls early in a block',
+    strength: 'Moderate',
+    body:
+      'A lift that holds the same weight and reps for 3 sessions has stalled. When 3 or more stall in the first 4 weeks of a block, or at any point in a cut, that is usually short-term fatigue or the calorie deficit, not a need for a lighter week. The app shows a recovery note instead: an extra minute of rest on those lifts (longer rest keeps reps up, which builds more strength and muscle), 7 or more hours of sleep (short sleep lowers strength and muscle building), and enough protein. In a cut, eating less slows gains in muscle more than strength, and holding your weights is the goal. Each lift counts once a week.',
   },
   {
     title: 'Short sleep, no extra sets',
@@ -141,6 +147,7 @@ export const REFERENCES = [
   'Schoenfeld BJ, Grgic J, Krieger J. How many times per week should a muscle be trained to maximize muscle hypertrophy? J Sports Sci. 2019;37(11):1286-1295.',
   'Refalo MC, Helms ER, Trexler ET, Hamilton DL, Fyfe JJ. Influence of resistance training proximity-to-failure on skeletal muscle hypertrophy: a systematic review with meta-analysis. Sports Med. 2023;53(3):649-665.',
   'Schoenfeld BJ, Grgic J, Van Every DW, Plotkin DL. Loading recommendations for muscle strength, hypertrophy, and local endurance: a re-examination of the repetition continuum. Sports. 2021;9(2):32.',
+  'Bell L, Strafford BW, Coleman M, Androulakis Korakakis P, Nolan D. Integrating deloading into strength and physique sports training programmes: an international Delphi consensus approach. Sports Med Open. 2023;9(1):87.',
   'Coleman M, Burke R, Augustin F, et al. Gaining more from doing less? The effects of a one-week deload period during supervised resistance training on muscular adaptations. PeerJ. 2024;12:e16777.',
   'Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.',
   'Garthe I, Raastad T, Refsnes PE, Koivisto A, Sundgot-Borgen J. Effect of two different weight-loss rates on body composition and strength and power-related performance in elite athletes. Int J Sport Nutr Exerc Metab. 2011;21(2):97-104.',

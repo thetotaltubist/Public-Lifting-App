@@ -8,7 +8,15 @@ import { Exercise, Goal } from './types';
 // partly tired is what builds the ability to keep going. See science.ts.
 // ------------------------------------------------------------------
 
-export function restSeconds(e: Exercise, rir: number | null, deload: boolean, goal: Goal = 'hypertrophy') {
+// A lift that has stalled gets an extra minute: longer rest lets you keep
+// your reps up, which is often all a stall early in a block needs
+export const STALLED_EXTRA_SECONDS = 60;
+
+export function restSeconds(e: Exercise, rir: number | null, deload: boolean, goal: Goal = 'hypertrophy', stalled = false) {
+  return baseRest(e, rir, deload, goal) + (stalled && !deload ? STALLED_EXTRA_SECONDS : 0);
+}
+
+function baseRest(e: Exercise, rir: number | null, deload: boolean, goal: Goal) {
   if (goal === 'endurance') return rir === 0 ? 90 : 60;
   let seconds = e.kind === 'isolation' ? 90 : e.repMin <= 6 ? 180 : 150;
   if (rir === 0) seconds += 30; // a set to failure needs a bit longer
@@ -16,7 +24,12 @@ export function restSeconds(e: Exercise, rir: number | null, deload: boolean, go
   return Math.max(60, seconds);
 }
 
-export function restReason(e: Exercise, rir: number | null, deload: boolean, goal: Goal = 'hypertrophy') {
+export function restReason(e: Exercise, rir: number | null, deload: boolean, goal: Goal = 'hypertrophy', stalled = false) {
+  if (stalled && !deload) return `${baseReason(e, rir, deload, goal)}, plus 1 min while this lift is stuck`;
+  return baseReason(e, rir, deload, goal);
+}
+
+function baseReason(e: Exercise, rir: number | null, deload: boolean, goal: Goal) {
   if (goal === 'endurance') return rir === 0 ? 'Endurance: short rest, plus 30s after a set to failure' : 'Endurance: short rest';
   const base = e.kind === 'isolation' ? 'Isolation work' : e.repMin <= 6 ? 'Heavy compound lift' : 'Compound lift';
   const extra = rir === 0 ? ', plus 30s after a set to failure' : deload ? ', a bit shorter on a deload' : '';
