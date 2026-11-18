@@ -22,6 +22,7 @@ export function defaultSettings(): Settings {
     swaps: {},
     customExercises: [],
     nextDayOverride: null,
+    setupDone: false,
   };
 }
 
@@ -75,6 +76,16 @@ export async function updateSettings(change: Partial<Settings>) {
   await write(SETTINGS, next);
   setCustomExercises(next.customExercises);
   return next;
+}
+
+// ---------- Backup and restore (see engine/backup.ts) ----------
+
+// Replaces every workout and setting with the ones from a backup
+export async function restoreAll(sessions: Session[], settings: Settings) {
+  await write(SESSIONS, sessions);
+  await write(SETTINGS, { ...defaultSettings(), ...settings });
+  await AsyncStorage.removeItem(ACTIVE);
+  setCustomExercises(settings.customExercises ?? []);
 }
 
 // ---------- The workout in progress (survives closing the app) ----------

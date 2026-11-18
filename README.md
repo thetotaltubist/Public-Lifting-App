@@ -6,6 +6,7 @@ Started from Mayg & Jaown (John's personal app), keeping the training engine and
 
 ## What it does
 
+- **Quick setup.** The first time it opens, one screen asks the goal, days a week, cut or build, units and whether to ask about pain, then suggests a program.
 - **Next workout, no calendar.** The app always shows the next day in the rotation, whatever day of the week it is. "Do a different day" lets you jump around.
 - **Programs and goals.** Settings → Start a new block asks the goal (strength, hypertrophy or endurance) and how many days a week you'll lift (2-6), then suggests the programs that fit: Full body (2-3 days), 5x5 (3 days, strength), Upper / Lower (4), 5-day hybrid, Push / Pull / Legs (5-6) and Bro split (5-6). The goal sets reps, rest, reps in reserve and weekly sets.
 - **Rolling 7-day volume.** Hard sets per muscle over the last 7 days against a weekly target. Sets for helper muscles count as half.
@@ -18,7 +19,7 @@ Started from Mayg & Jaown (John's personal app), keeping the training engine and
 - **Rest timer** with a notification when it's up.
 - "How the plan works" lists the research behind each rule.
 
-Everything is stored on the phone.
+Everything is stored on the phone. Settings → Backup saves every workout and setting to one file (Files, iCloud Drive, AirDrop or email), and restores it on a new phone.
 
 ## Before the first build
 

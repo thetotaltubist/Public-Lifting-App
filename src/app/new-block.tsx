@@ -1,15 +1,17 @@
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { DAY_CHOICES, DAYS_GUIDANCE, daysFor, goalFor, goalInfo, GOALS, programFor, suggestPrograms } from '../engine/programs';
-import { Goal, Settings } from '../engine/types';
+import { Goal, Mode, Settings } from '../engine/types';
 import { loadSettings, updateSettings } from '../storage';
 import { colors } from '../theme';
 
 // ------------------------------------------------------------------
 // Start a new block: two questions (goal, days a week), then the
 // programs that fit. Starting it resets the 4-week volume ramp.
+// The first time the app opens, the same screen is the setup, with three
+// more choices (cut or build, units, pain check).
 // ------------------------------------------------------------------
 
 export default function NewBlockScreen() {
@@ -18,6 +20,10 @@ export default function NewBlockScreen() {
   const [days, setDays] = useState(5);
   const [picked, setPicked] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const first = useLocalSearchParams<{ first?: string }>().first === '1';
+  const [mode, setMode] = useState<Mode>('build');
+  const [unit, setUnit] = useState<Settings['unit']>('lb');
+  const [painCheck, setPainCheck] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -26,6 +32,9 @@ export default function NewBlockScreen() {
         setGoal(goalFor(s));
         setDays(daysFor(s));
         setPicked(programFor(s).id);
+        setMode(s.mode);
+        setUnit(s.unit);
+        setPainCheck(s.painCheck !== false);
       });
     }, [])
   );
@@ -53,8 +62,10 @@ export default function NewBlockScreen() {
       ...(picked !== current ? { rotation: undefined, nextDayOverride: null } : {}),
       blockStart: now,
       deloadStart: null,
+      ...(first ? { mode, unit, painCheck, setupDone: true } : {}),
     });
-    router.back();
+    if (first) router.replace('/');
+    else router.back();
   }
 
   const row = (f: (typeof fits)[number]) => {
@@ -79,10 +90,20 @@ export default function NewBlockScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      <Muted style={{ marginBottom: 14 }}>
-        Two quick questions. A block runs about 4 to 6 weeks: weekly sets build for 4 weeks, then the app suggests a lighter week when
-        your lifts stall. Cut or build stays as it is.
-      </Muted>
+      {first ? (
+        <>
+          <Stack.Screen options={{ title: 'Welcome', headerBackVisible: false, gestureEnabled: false }} />
+          <Text style={[styles.body, { marginBottom: 14 }]}>
+            The app plans every workout around one thing: getting your weekly sets in for every muscle. Miss a day and the next sessions
+            catch you up. Answer a few questions to set it up. You can change any of it later in Settings.
+          </Text>
+        </>
+      ) : (
+        <Muted style={{ marginBottom: 14 }}>
+          Two quick questions. A block runs about 4 to 6 weeks: weekly sets build for 4 weeks, then the app suggests a lighter week
+          when your lifts stall. Cut or build stays as it is.
+        </Muted>
+      )}
 
       <Card>
         <Text style={styles.h2}>{"What's the goal?"}</Text>
@@ -104,7 +125,40 @@ export default function NewBlockScreen() {
         <Muted>{DAYS_GUIDANCE}</Muted>
       </Card>
 
-      <Text style={[styles.h2, { marginTop: 8, marginBottom: 10 }]}>Programs that fit</Text>
+      {first && (
+        <>
+          <Card>
+            <Text style={styles.h2}>Trying to lose fat right now?</Text>
+            <View style={{ flexDirection: 'row', marginTop: 10 }}>
+              <Chip label="No, build" selected={mode === 'build'} onPress={() => setMode('build')} />
+              <Chip label="Yes, cut" selected={mode === 'cut'} onPress={() => setMode('cut')} />
+            </View>
+            <Muted>A cut keeps the weights heavy with a bit less volume, enough to hold on to muscle while you lose fat.</Muted>
+          </Card>
+
+          <Card>
+            <Text style={styles.h2}>Pounds or kilos?</Text>
+            <View style={{ flexDirection: 'row', marginTop: 10 }}>
+              <Chip label="lb" selected={unit === 'lb'} onPress={() => setUnit('lb')} />
+              <Chip label="kg" selected={unit === 'kg'} onPress={() => setUnit('kg')} />
+            </View>
+          </Card>
+
+          <Card>
+            <Text style={styles.h2}>Ask about aches and pains?</Text>
+            <View style={{ flexDirection: 'row', marginTop: 10 }}>
+              <Chip label="Yes" selected={painCheck} onPress={() => setPainCheck(true)} />
+              <Chip label="No" selected={!painCheck} onPress={() => setPainCheck(false)} />
+            </View>
+            <Muted>
+              After each exercise you can rate any joint or muscle pain from 0 to 10. If something hurts, the weight holds or drops instead
+              of going up.
+            </Muted>
+          </Card>
+        </>
+      )}
+
+      <Text style={[styles.h2, { marginTop: 8, marginBottom: 10 }]}>{first ? 'Pick a program' : 'Programs that fit'}</Text>
       {good.map(row)}
       {others.length > 0 &&
         (showAll || others.some((f) => f.program.id === picked) ? (
@@ -122,7 +176,7 @@ export default function NewBlockScreen() {
         <Text style={styles.body}>{goalInfo(goal).guidance}</Text>
       </Card>
 
-      <Button title="Start this block" onPress={start} />
+      <Button title={first ? "Let's go" : 'Start this block'} onPress={start} />
     </ScrollView>
   );
 }
