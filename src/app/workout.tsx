@@ -156,8 +156,8 @@ export default function WorkoutScreen() {
       return;
     }
     const stuck = isStalled(i, ex.exerciseId);
-    const seconds = restSeconds(e, set.rir, active!.deload, goal, stuck);
-    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, set.rir, active!.deload, goal, stuck) });
+    const seconds = restSeconds(e, set.rir, active!.deload, goal, stuck, settings!.rest);
+    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, set.rir, active!.deload, goal, stuck, settings!.rest) });
     scheduleRestAlert(seconds, next);
   }
 
@@ -185,8 +185,8 @@ export default function WorkoutScreen() {
     }
     const e = liftFor(i, ex.exerciseId);
     const stuck = isStalled(i, ex.exerciseId);
-    const seconds = restSeconds(e, last.rir, active!.deload, goal, stuck);
-    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, last.rir, active!.deload, goal, stuck) });
+    const seconds = restSeconds(e, last.rir, active!.deload, goal, stuck, settings!.rest);
+    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, last.rir, active!.deload, goal, stuck, settings!.rest) });
     scheduleRestAlert(seconds, next);
   }
 
@@ -274,7 +274,7 @@ export default function WorkoutScreen() {
   function timeLeft() {
     const items = active!.exercises.map((ex, i) => ({ exercise: liftFor(i, ex.exerciseId), sets: ex.sets.filter((x) => !x.done).length }));
     if (items.every((x) => x.sets === 0)) return 'All sets done';
-    const minutes = estimateMinutes(items, active!.deload, goal);
+    const minutes = estimateMinutes(items, active!.deload, goal, settings!.rest);
     const started = active!.exercises.some((ex) => ex.sets.some((x) => x.done));
     return started ? `About ${minutes} min left` : `About ${minutes} min, rest included`;
   }

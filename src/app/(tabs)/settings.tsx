@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppVersion from '../../components/AppVersion';
 import { router, useFocusEffect } from 'expo-router';
@@ -7,8 +7,9 @@ import { Button, Card, Chip, Muted, styles, Title } from '../../components/ui';
 import { day } from '../../engine/exercises';
 import { blockWeek, isDeload, rotationFor } from '../../engine/plan';
 import { daysFor, goalFor, goalInfo, programFor } from '../../engine/programs';
+import { defaultRest, formatClock, REST_GROUPS, REST_MAX, REST_MIN, restFor } from '../../engine/rest';
 import { colors } from '../../theme';
-import { Settings } from '../../engine/types';
+import { RestGroup, Settings } from '../../engine/types';
 import { loadSettings, updateSettings } from '../../storage';
 import { pickBackup, shareBackup } from '../../backup';
 
@@ -25,6 +26,16 @@ export default function SettingsScreen() {
   const now = new Date();
   const deload = isDeload(settings, now);
   const swaps = Object.entries(settings.swaps);
+  const goal = goalFor(settings);
+
+  // Rest in 15 second steps; landing back on the default clears the custom time
+  function stepRest(group: RestGroup, by: number) {
+    const next = Math.min(REST_MAX, Math.max(REST_MIN, restFor(group, goal, settings!.rest) + by));
+    const rest = { ...settings!.rest };
+    if (next === defaultRest(group, goal)) delete rest[group];
+    else rest[group] = next;
+    change({ rest });
+  }
 
   async function saveBackup() {
     try {
@@ -115,6 +126,38 @@ export default function SettingsScreen() {
         </Card>
 
         <Card>
+          <Text style={styles.h2}>Rest between sets</Text>
+          <Muted style={{ marginVertical: 8 }}>
+            {goal === 'endurance'
+              ? 'For endurance the defaults are short on purpose: training while partly tired builds the ability to keep going.'
+              : 'Longer rest on big lifts lets you keep your reps up, which builds more muscle and strength than short rest. Past about 90 seconds, extra rest helps isolation work little.'}{' '}
+            The timer still adds 30 seconds after a set to failure and a minute on a lift that has stalled, and takes 30 off on a deload week.
+          </Muted>
+          {REST_GROUPS.map(({ group, name, detail }) => {
+            const value = restFor(group, goal, settings.rest);
+            const custom = settings.rest?.[group] != null;
+            return (
+              <View key={group} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderTopWidth: 1, borderColor: colors.border }}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={[styles.body, { fontWeight: '700' }]}>{name}</Text>
+                  <Muted style={{ fontSize: 12 }}>
+                    {detail} · {custom ? `default ${formatClock(defaultRest(group, goal))}` : 'default'}
+                  </Muted>
+                </View>
+                <StepButton label="−" onPress={() => stepRest(group, -15)} />
+                <Text style={{ color: custom ? colors.goldText : colors.text, fontWeight: '800', fontSize: 17, width: 52, textAlign: 'center', fontVariant: ['tabular-nums'] }}>
+                  {formatClock(value)}
+                </Text>
+                <StepButton label="+" onPress={() => stepRest(group, 15)} />
+              </View>
+            );
+          })}
+          {settings.rest && Object.keys(settings.rest).length > 0 && (
+            <Button title="Back to the defaults" kind="plain" onPress={() => change({ rest: {} })} />
+          )}
+        </Card>
+
+        <Card>
           <Text style={styles.h2}>Training block</Text>
           <Text style={[styles.body, { marginTop: 8 }]}>
             {programFor(settings).name} · {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
@@ -190,3 +233,14 @@ export default function SettingsScreen() {
 }
 
 const arrow = { color: colors.accent, fontSize: 20, fontWeight: '700' as const, paddingHorizontal: 12, paddingVertical: 2 };
+
+function StepButton({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={6}
+      style={({ pressed }) => ({ width: 38, height: 34, borderRadius: 10, backgroundColor: colors.chip, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.6 : 1 })}>
+      <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>{label}</Text>
+    </Pressable>
+  );
+}

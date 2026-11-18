@@ -297,5 +297,5 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
 // About how long today's workout takes, rest included (see rest.ts)
 export function planMinutes(plan: Plan, settings: Settings) {
   const items = plan.exercises.map((p) => ({ exercise: exercise(p.exerciseId), sets: p.sets, repMin: p.repMin }));
-  return estimateMinutes(items, plan.deload, goalFor(settings));
+  return estimateMinutes(items, plan.deload, goalFor(settings), settings.rest);
 }

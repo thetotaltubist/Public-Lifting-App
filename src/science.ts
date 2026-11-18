@@ -81,7 +81,7 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     title: 'Rest between sets',
     strength: 'Moderate',
     body:
-      'Resting 2 minutes or more on big lifts lets you keep your reps up, which adds up to more growth than short rest. For isolation work, rest beyond about 90 seconds adds little. The timer suggests 3 minutes for heavy compounds, 2:30 for other compounds and 1:30 for isolation, adding 30 seconds after a set to failure and a minute on a lift that has stalled.',
+      'Resting 2 minutes or more on big lifts lets you keep your reps up, which adds up to more growth than short rest. For isolation work, rest beyond about 90 seconds adds little. The timer suggests 3 minutes for heavy compounds, 2:30 for other compounds and 1:30 for isolation, adding 30 seconds after a set to failure and a minute on a lift that has stalled. You can set your own time for each group in Settings, and those extras still apply on top.',
   },
   {
     title: 'Progression',

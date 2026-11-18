@@ -517,3 +517,10 @@ test('a stuck lift gets an extra minute of rest', () => {
   assert.equal(restSeconds(exercise('lat-pulldown'), 2, false, 'hypertrophy', true), 210);
   assert.equal(restSeconds(exercise('lat-pulldown'), 2, true, 'hypertrophy', true), 120); // not on a deload
 });
+
+test('your own rest time replaces the default, and the extras still apply', () => {
+  const custom = { compound: 120 };
+  assert.equal(restSeconds(exercise('lat-pulldown'), 2, false, 'hypertrophy', false, custom), 120);
+  assert.equal(restSeconds(exercise('lat-pulldown'), 0, false, 'hypertrophy', true, custom), 210); // +30 failure, +60 stalled
+  assert.equal(restSeconds(exercise('pec-deck'), 2, false, 'hypertrophy', false, custom), 90); // other groups keep the default
+});
