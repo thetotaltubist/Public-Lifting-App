@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { Badge, Card, Muted, styles, Title } from '../components/ui';
+import { Badge, Card, Muted, styles } from '../components/ui';
 import { daysFor, goalFor, goalInfo, programFor } from '../engine/programs';
 import { Settings } from '../engine/types';
 import { pubmedLink, pubmedSearch, REFERENCES, SCIENCE } from '../science';
@@ -32,7 +32,6 @@ export default function ScienceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      <Title>Why this works</Title>
       <Muted style={{ marginBottom: 14 }}>What the plan is based on, how sure the research is, and the studies themselves.</Muted>
       {settings && (
         <Card style={{ backgroundColor: colors.accentSoft, borderColor: colors.accentSoft }}>

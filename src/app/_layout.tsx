@@ -30,7 +30,7 @@ export default function RootLayout() {
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="workout" options={{ title: 'Workout', gestureEnabled: false, headerBackVisible: false }} />
-        <Stack.Screen name="science" options={{ title: '' }} />
+        <Stack.Screen name="science" options={{ title: 'Why this works' }} />
         <Stack.Screen name="program" options={{ title: 'Exercises' }} />
         <Stack.Screen name="new-block" options={{ title: 'New block' }} />
         <Stack.Screen name="one-rm" options={{ title: '1 rep max' }} />
