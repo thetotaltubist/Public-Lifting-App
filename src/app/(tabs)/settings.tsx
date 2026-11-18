@@ -18,6 +18,8 @@ export default function SettingsScreen() {
   // The rest times as last tapped, so quick taps build on each other
   // instead of each starting from the value before the save finished
   const restRef = useRef<Settings['rest'] | null>(null);
+  // Saves one after another, so an older save can't land last
+  const restSave = useRef<Promise<unknown>>(Promise.resolve());
   useFocusEffect(
     useCallback(() => {
       restRef.current = null;
@@ -40,8 +42,8 @@ export default function SettingsScreen() {
     if (next === defaultRest(group, goal)) delete rest[group];
     else rest[group] = next;
     restRef.current = rest;
-    setSettings({ ...settings!, rest }); // show it right away
-    change({ rest });
+    setSettings((s) => (s ? { ...s, rest } : s)); // show it right away
+    restSave.current = restSave.current.then(() => updateSettings({ rest })).catch(() => {});
   }
 
   async function saveBackup() {
@@ -162,7 +164,8 @@ export default function SettingsScreen() {
           {settings.rest && Object.keys(settings.rest).length > 0 && (
             <Button title="Back to the defaults" kind="plain" onPress={() => {
                 restRef.current = {};
-                change({ rest: {} });
+                setSettings((s) => (s ? { ...s, rest: {} } : s));
+                restSave.current = restSave.current.then(() => updateSettings({ rest: {} })).catch(() => {});
               }} />
           )}
         </Card>
