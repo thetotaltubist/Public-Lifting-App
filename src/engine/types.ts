@@ -82,5 +82,6 @@ export type Settings = {
   program?: string; // program id; missing means Push / Pull / Legs
   goal?: Goal; // missing means hypertrophy
   daysPerWeek?: number; // how many days a week you plan to lift; missing means 5
+  setupDone?: boolean; // finished the first-run setup; missing means not yet
   painCheck?: boolean; // ask for a 0-10 pain rating after each exercise; missing means on
 };

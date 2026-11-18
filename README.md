@@ -1,11 +1,12 @@
-# Lift (working title)
+# Every Set Counts
 
-A simple, evidence-based lifting app for busy lifters. It plans every workout around one idea: get your weekly sets in for every muscle, even when life gets in the way. Name, icon and App Store listing are still to come.
+A simple, evidence-based lifting app for anyone who likes to lift and wants to keep making progress without the gym taking over their life. It plans every workout around one idea: get your weekly sets in for every muscle, even when life gets in the way.
 
 Started from Mayg & Jaown (John's personal app), keeping the training engine and dropping everything personal.
 
 ## What it does
 
+- **Quick setup.** The first time it opens, one screen asks the goal, days a week, cut or build, units and whether to ask about pain, then suggests a program.
 - **Next workout, no calendar.** The app always shows the next day in the rotation, whatever day of the week it is. "Do a different day" lets you jump around.
 - **Programs and goals.** Settings → Start a new block asks the goal (strength, hypertrophy or endurance) and how many days a week you'll lift (2-6), then suggests the programs that fit: Full body (2-3 days), 5x5 (3 days, strength), Upper / Lower (4), 5-day hybrid, Push / Pull / Legs (5-6) and Bro split (5-6). The goal sets reps, rest, reps in reserve and weekly sets.
 - **Rolling 7-day volume.** Hard sets per muscle over the last 7 days against a weekly target. Sets for helper muscles count as half.
@@ -18,11 +19,18 @@ Started from Mayg & Jaown (John's personal app), keeping the training engine and
 - **Rest timer** with a notification when it's up.
 - "How the plan works" lists the research behind each rule.
 
-Everything is stored on the phone.
+Everything is stored on the phone. Settings → Backup saves every workout and setting to one file (Files, iCloud Drive, AirDrop or email), and restores it on a new phone.
+
+## App Store listing
+
+- Name: **Every Set Counts: Lifting Plan**
+- Subtitle: **Miss a day, keep your progress**
+- Under the icon on the home screen: **Every Set** (`expo.name` in `app.json`), so it isn't cut off
+- Icon: the stacked wordmark "every / set✓ / counts" in Inter Black, "set" and the check in gold #C9A35C. Forest #26372E on cream #F3EFE6, cream on forest in dark mode, plus a tinted version (`assets/icon-*.png`, sources in `assets/source/`). The gold check alone (`mark-check`) is for tiny spots.
 
 ## Before the first build
 
-The app ID (`com.jdicesar.liftnew`), name and icon are placeholders. Set the real ones in `app.json` once the name is picked, because the app ID can't change after the app is on the App Store. Then link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
+The app ID is `com.jdicesar.everysetcounts`. It can't change after the first TestFlight upload. Link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
 
 ## Run it on your iPhone or iPad
 

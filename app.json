@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "Lift (working title)",
-    "slug": "lift-new",
+    "name": "Every Set",
+    "slug": "every-set-counts",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "liftnew",
+    "scheme": "everysetcounts",
     "userInterfaceStyle": "automatic",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-light.png",
     "runtimeVersion": {
       "policy": "nativeVersion"
     },
     "ios": {
-      "bundleIdentifier": "com.jdicesar.liftnew",
+      "bundleIdentifier": "com.jdicesar.everysetcounts",
       "supportsTablet": true,
       "appleTeamId": "7V9S64W92Z",
       "buildNumber": "1",
@@ -23,6 +23,11 @@
       "entitlements": {
         "com.apple.developer.healthkit": true,
         "com.apple.developer.healthkit.access": []
+      },
+      "icon": {
+        "light": "./assets/icon-light.png",
+        "dark": "./assets/icon-dark.png",
+        "tinted": "./assets/icon-tinted.png"
       }
     },
     "plugins": [
@@ -30,13 +35,13 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash.png",
-          "imageWidth": 260,
+          "image": "./assets/icon-light.png",
+          "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#121212",
+          "backgroundColor": "#F3EFE6",
           "dark": {
-            "image": "./assets/splash.png",
-            "backgroundColor": "#121212"
+            "image": "./assets/icon-dark.png",
+            "backgroundColor": "#26372E"
           }
         }
       ]

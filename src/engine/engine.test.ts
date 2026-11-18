@@ -10,6 +10,7 @@ import { weeklyRecap } from './recap';
 import { rollingVolume, targetFor, weeklyTarget } from './volume';
 import { formatClock, restSeconds } from './rest';
 import { HealthData, proteinTarget, shortNightStreak, weightTrend } from './health';
+import { backupFileName, makeBackup, readBackup } from './backup';
 import { Session, Settings } from './types';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -455,4 +456,21 @@ test('a new goal with very different reps starts from an estimated 1 rep max', (
   assert.match(r.why, /1 rep max/);
   // Same goal: normal double progression
   assert.equal(suggest('pl-flat-press', [s], { comeback: false, deload: false }).weight, 210); // top of 6-10 hit, so +10
+});
+
+test('a backup round-trips, and bad files change nothing', () => {
+  const sessions = doSession([], at(0));
+  const raw = JSON.stringify(makeBackup(sessions, settings, at(1)));
+  const read = readBackup(raw);
+  assert.ok('backup' in read);
+  if ('backup' in read) {
+    assert.deepEqual(read.backup.sessions, sessions);
+    assert.equal(read.backup.settings.mode, settings.mode);
+    assert.equal(read.backup.settings.setupDone, true);
+  }
+  assert.ok('error' in readBackup('not json'));
+  assert.ok('error' in readBackup(JSON.stringify({ sessions: [], settings: {} })));
+  assert.match((readBackup(JSON.stringify({ ...JSON.parse(raw), version: 99 })) as { error: string }).error, /newer version/);
+  assert.ok('error' in readBackup(JSON.stringify({ ...JSON.parse(raw), sessions: null })));
+  assert.equal(backupFileName(new Date(2026, 0, 5)), 'lifting-backup-2026-01-05.json');
 });

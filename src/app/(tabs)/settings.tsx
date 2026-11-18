@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppVersion from '../../components/AppVersion';
 import { router, useFocusEffect } from 'expo-router';
@@ -10,6 +10,7 @@ import { daysFor, goalFor, goalInfo, programFor } from '../../engine/programs';
 import { colors } from '../../theme';
 import { Settings } from '../../engine/types';
 import { loadSettings, updateSettings } from '../../storage';
+import { pickBackup, shareBackup } from '../../backup';
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -24,6 +25,47 @@ export default function SettingsScreen() {
   const now = new Date();
   const deload = isDeload(settings, now);
   const swaps = Object.entries(settings.swaps);
+
+  async function saveBackup() {
+    try {
+      await shareBackup();
+    } catch {
+      Alert.alert("Couldn't save a backup", 'Something went wrong making the file. Try again.');
+    }
+  }
+
+  async function restoreBackup() {
+    let picked;
+    try {
+      picked = await pickBackup();
+    } catch {
+      Alert.alert("Couldn't open that file", 'Try picking it again.');
+      return;
+    }
+    if (!picked) return;
+    if ('error' in picked) {
+      Alert.alert("Couldn't restore", picked.error);
+      return;
+    }
+    const { backup, apply } = picked;
+    const when = new Date(backup.exportedAt).toLocaleDateString();
+    Alert.alert(
+      'Replace everything on this phone?',
+      `This backup from ${when} has ${backup.sessions.length} ${backup.sessions.length === 1 ? 'workout' : 'workouts'}. It replaces all workouts and settings on this phone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Restore',
+          style: 'destructive',
+          onPress: async () => {
+            await apply();
+            setSettings(await loadSettings());
+            Alert.alert('Restored', 'Your workouts and settings are back.');
+          },
+        },
+      ]
+    );
+  }
 
   const rotation = rotationFor(settings);
   function move(i: number, by: number) {
@@ -123,6 +165,18 @@ export default function SettingsScreen() {
             Replace any exercise, or add a machine your gym has.
           </Muted>
           <Button title="Change exercises" kind="plain" onPress={() => router.push('/program')} />
+        </Card>
+
+        <Card>
+          <Text style={styles.h2}>Backup</Text>
+          <Muted style={{ marginVertical: 8 }}>
+            Everything is stored only on this phone. Save a backup to Files or iCloud Drive now and then, so a lost or new phone doesn&apos;t
+            mean starting over.
+          </Muted>
+          <View style={{ gap: 8 }}>
+            <Button title="Save a backup" kind="plain" onPress={saveBackup} />
+            <Button title="Restore from a backup" kind="plain" onPress={restoreBackup} />
+          </View>
         </Card>
 
         <View style={{ gap: 8 }}>

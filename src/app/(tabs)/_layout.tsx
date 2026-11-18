@@ -1,5 +1,7 @@
-import { Tabs } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Redirect, Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { loadSettings } from '../../storage';
 import { accentHex, colors } from '../../theme';
 
 const mist = '#A9A7A1';
@@ -9,6 +11,14 @@ function TabSymbol({ outline, filled, color, focused }: { outline: string; fille
 }
 
 export default function TabLayout() {
+  // The first time the app opens, go through setup first
+  const [setupDone, setSetupDone] = useState<boolean | null>(null);
+  useEffect(() => {
+    loadSettings().then((s) => setSetupDone(!!s.setupDone));
+  }, []);
+  if (setupDone === null) return null;
+  if (!setupDone) return <Redirect href="/new-block?first=1" />;
+
   return (
     <Tabs
       screenOptions={{
