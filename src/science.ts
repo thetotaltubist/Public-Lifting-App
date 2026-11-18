@@ -100,6 +100,7 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     strength: 'Emerging',
     body:
       'A scheduled deload week did not add muscle in a controlled trial, and coaches now favour deloading when needed rather than on a timer, most often every 4 to 6 weeks. So the app never forces one. It suggests one from week 5 of a block if 3 or more lifts have stalled, or once a block reaches week 7, and you decide. In a cut it only suggests one for a long block, since stalls there are expected.',
+    pmids: ['38274324', '37730925'],
   },
   {
     title: 'Rate of weight loss',
@@ -112,6 +113,7 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     strength: 'Moderate',
     body:
       'A lift that holds the same weight and reps for 3 sessions has stalled. When 3 or more stall in the first 4 weeks of a block, or at any point in a cut, that is usually short-term fatigue or the calorie deficit, not a need for a lighter week. The app shows a recovery note instead: an extra minute of rest on those lifts (longer rest keeps reps up, which builds more strength and muscle), 7 or more hours of sleep (short sleep lowers strength and muscle building), and enough protein. In a cut, eating less slows gains in muscle more than strength, and holding your weights is the goal. Each lift counts once a week.',
+    pmids: ['26605807', '29422383', '34623696'],
   },
   {
     title: 'Short sleep, no extra sets',
@@ -132,6 +134,20 @@ export function pubmedSearch(reference: string) {
   const title = reference.split('. ')[1] ?? reference;
   return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(title)}`;
 }
+
+// What each linked study is, checked on PubMed
+export const PMID_LABELS: Record<string, string> = {
+  '35708888': 'Craven 2022: sleep loss and physical performance (meta-analysis)',
+  '8112265': 'Reilly 1994: partial sleep loss and weightlifting',
+  '36136596': 'Knowles 2022: sleep restriction and resistance training in women',
+  '33400856': 'Lamon 2021: one night without sleep and muscle protein building',
+  '32078168': 'Saner 2020: sleep restriction and muscle protein building',
+  '38274324': 'Coleman 2024: a one-week deload and muscle gains',
+  '37730925': 'Bell 2023: coaches\' consensus on deloading',
+  '26605807': 'Schoenfeld 2016: longer rest, more strength and muscle',
+  '29422383': 'Knowles 2018: poor sleep and muscle strength (review)',
+  '34623696': 'Murphy & Koehler 2022: a calorie deficit and training gains (meta-analysis)',
+};
 
 export function pubmedLink(pmid: string) {
   return `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;

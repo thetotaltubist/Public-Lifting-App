@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { Badge, Card, Muted, styles } from '../components/ui';
 import { daysFor, goalFor, goalInfo, programFor } from '../engine/programs';
 import { Settings } from '../engine/types';
-import { pubmedLink, pubmedSearch, REFERENCES, SCIENCE } from '../science';
+import { PMID_LABELS, pubmedLink, pubmedSearch, REFERENCES, SCIENCE } from '../science';
 import { loadSettings } from '../storage';
 import { colors } from '../theme';
 
@@ -52,7 +52,7 @@ export default function ScienceScreen() {
             <Badge label={s.strength} tone={s.strength === 'Emerging' ? 'warn' : 'gold'} />
           </View>
           <Text style={[styles.body, { marginBottom: s.pmids ? 8 : 0 }]}>{s.body}</Text>
-          {s.pmids?.map((id) => <Link key={id} label={`PubMed ${id}`} url={pubmedLink(id)} />)}
+          {s.pmids?.map((id) => <Link key={id} label={PMID_LABELS[id] ?? `PubMed ${id}`} url={pubmedLink(id)} />)}
         </Card>
       ))}
       <Text style={[styles.h2, { marginVertical: 8 }]}>References</Text>
