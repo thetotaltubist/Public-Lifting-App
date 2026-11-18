@@ -1,6 +1,6 @@
 # Lift (working title)
 
-A simple, evidence-based lifting app for busy lifters. It plans every workout around one idea: get your weekly sets in for every muscle, even when life gets in the way. Name, icon and App Store listing are still to come.
+A simple, evidence-based lifting app for anyone who likes to lift and wants to keep making progress without the gym taking over their life. It plans every workout around one idea: get your weekly sets in for every muscle, even when life gets in the way. Name, icon and App Store listing are still to come.
 
 Started from Mayg & Jaown (John's personal app), keeping the training engine and dropping everything personal.
 
