@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { hideSplash } from '../splash';
 import { startLaunchUpdateCheck } from '../updates';
 import { colors, hexColors } from '../theme';
-import { renderBackButton, renderNoButton } from '../components/BackButton';
+import { backButtonItems, noItems } from '../components/BackButton';
 
 export default function RootLayout() {
   const scheme = useColorScheme() === 'light' ? 'light' : 'dark';
@@ -22,7 +22,7 @@ export default function RootLayout() {
       headerShadowVisible: false,
       // Our own back arrow in place of iOS's, which flashed on open
       headerBackVisible: false,
-      headerLeft: renderBackButton,
+      unstable_headerLeftItems: backButtonItems,
     };
   }, [scheme]);
 
@@ -61,7 +61,7 @@ export default function RootLayout() {
             options={{
               title: 'Workout',
               gestureEnabled: false,
-              headerLeft: renderNoButton,
+              unstable_headerLeftItems: noItems,
             }}
           />
           <Stack.Screen name="science" options={{ title: 'Why this works' }} />

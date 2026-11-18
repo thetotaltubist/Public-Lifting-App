@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
-import { renderNoButton } from '../components/BackButton';
+import { noItems } from '../components/BackButton';
 import { DAY_CHOICES, DAYS_GUIDANCE, daysFor, goalFor, goalInfo, GOALS, programFor, suggestPrograms } from '../engine/programs';
 import { Goal, Mode, Settings } from '../engine/types';
 import { loadSettings, updateSettings } from '../storage';
@@ -93,7 +93,7 @@ export default function NewBlockScreen() {
     <ScrollView contentContainerStyle={styles.screen}>
       {first ? (
         <>
-          <Stack.Screen options={{ title: 'Welcome', headerLeft: renderNoButton, gestureEnabled: false }} />
+          <Stack.Screen options={{ title: 'Welcome', unstable_headerLeftItems: noItems, gestureEnabled: false }} />
           <Text style={[styles.title, { fontSize: 28, lineHeight: 32, marginBottom: 8 }]}>Miss a day, keep your progress.</Text>
           <Text style={[styles.body, { marginBottom: 14 }]}>
             Every Set Counts plans every workout around one thing: getting your weekly sets in for every muscle. Miss a day and the next sessions
