@@ -10,3 +10,4 @@
 - If a visual bug survives one fix, reproduce it (simulator in the same light/dark mode, or a screen recording) before changing more code.
 - Write commit messages and in-app text in plain words.
 - JS-only changes ship over the air. Native changes (modules, permissions, icon, splash) need a new build: bump `ios.buildNumber` in `app.json`.
+- The cloud workspace can't reach most websites (PubMed included). When a lookup is blocked and John's Mac is online, do it through the Remote Control session on the Mac rather than asking him to add a new cloud environment.
