@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Lift (working title)",
+    "slug": "lift-new",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "liftnew",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "runtimeVersion": {
+      "policy": "nativeVersion"
+    },
+    "ios": {
+      "bundleIdentifier": "com.jdicesar.liftnew",
+      "supportsTablet": true,
+      "appleTeamId": "7V9S64W92Z",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSHealthShareUsageDescription": "Reads your weight and sleep from Apple Health to keep a cut from costing muscle and to skip extra sets after short nights. Nothing is written to Health.",
+        "NSHealthUpdateUsageDescription": "This app never writes to Apple Health. Apple requires this text because the app uses HealthKit."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 260,
+          "resizeMode": "contain",
+          "backgroundColor": "#121212",
+          "dark": {
+            "image": "./assets/splash.png",
+            "backgroundColor": "#121212"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

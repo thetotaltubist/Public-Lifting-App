@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Placeholder icon until the real name and logo are picked -->
+  <rect width="1024" height="1024" fill="#121212"/>
+  <g fill="#FF7A45">
+    <rect x="212" y="372" width="80" height="280" rx="24"/>
+    <rect x="312" y="322" width="90" height="380" rx="28"/>
+    <rect x="732" y="372" width="80" height="280" rx="24"/>
+    <rect x="622" y="322" width="90" height="380" rx="28"/>
+    <rect x="402" y="482" width="220" height="60" rx="12"/>
+  </g>
+</svg>
