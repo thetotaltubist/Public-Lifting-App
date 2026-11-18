@@ -93,8 +93,9 @@ export default function NewBlockScreen() {
       {first ? (
         <>
           <Stack.Screen options={{ title: 'Welcome', headerBackVisible: false, gestureEnabled: false }} />
+          <Text style={[styles.h2, { marginBottom: 6 }]}>Miss a day, keep your progress.</Text>
           <Text style={[styles.body, { marginBottom: 14 }]}>
-            The app plans every workout around one thing: getting your weekly sets in for every muscle. Miss a day and the next sessions
+            Every Set Counts plans every workout around one thing: getting your weekly sets in for every muscle. Miss a day and the next sessions
             catch you up. Answer a few questions to set it up. You can change any of it later in Settings.
           </Text>
         </>

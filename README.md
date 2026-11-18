@@ -1,6 +1,6 @@
 # Every Set Counts
 
-A simple, evidence-based lifting app for anyone who likes to lift and wants to keep making progress without the gym taking over their life. It plans every workout around one idea: get your weekly sets in for every muscle, even when life gets in the way. The icon and App Store listing are still to come.
+A simple, evidence-based lifting app for anyone who likes to lift and wants to keep making progress without the gym taking over their life. It plans every workout around one idea: get your weekly sets in for every muscle, even when life gets in the way.
 
 Started from Mayg & Jaown (John's personal app), keeping the training engine and dropping everything personal.
 
@@ -21,9 +21,15 @@ Started from Mayg & Jaown (John's personal app), keeping the training engine and
 
 Everything is stored on the phone. Settings → Backup saves every workout and setting to one file (Files, iCloud Drive, AirDrop or email), and restores it on a new phone.
 
+## App Store listing
+
+- Name: **Every Set Counts: Lifting Plan**
+- Subtitle: **Miss a day, keep your progress**
+- Icon: a tally mark, four bars crossed by a fifth (`assets/source/icon.svg`)
+
 ## Before the first build
 
-The app ID (`com.jdicesar.liftnew`) and icon are placeholders. Set the real ones in `app.json` before the first TestFlight upload, because the app ID can't change after the app is on the App Store. Then link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
+The app ID (`com.jdicesar.liftnew`) is a placeholder. Set the real ones in `app.json` before the first TestFlight upload, because the app ID can't change after the app is on the App Store. Then link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
 
 ## Run it on your iPhone or iPad
 
