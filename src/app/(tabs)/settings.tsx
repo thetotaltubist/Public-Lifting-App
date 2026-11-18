@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppVersion from '../../components/AppVersion';
@@ -15,8 +15,12 @@ import { pickBackup, shareBackup } from '../../backup';
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
+  // The rest times as last tapped, so quick taps build on each other
+  // instead of each starting from the value before the save finished
+  const restRef = useRef<Settings['rest'] | null>(null);
   useFocusEffect(
     useCallback(() => {
+      restRef.current = null;
       loadSettings().then(setSettings);
     }, [])
   );
@@ -30,10 +34,13 @@ export default function SettingsScreen() {
 
   // Rest in 15 second steps; landing back on the default clears the custom time
   function stepRest(group: RestGroup, by: number) {
-    const next = Math.min(REST_MAX, Math.max(REST_MIN, restFor(group, goal, settings!.rest) + by));
-    const rest = { ...settings!.rest };
+    const current = restRef.current ?? settings!.rest;
+    const next = Math.min(REST_MAX, Math.max(REST_MIN, restFor(group, goal, current) + by));
+    const rest = { ...current };
     if (next === defaultRest(group, goal)) delete rest[group];
     else rest[group] = next;
+    restRef.current = rest;
+    setSettings({ ...settings!, rest }); // show it right away
     change({ rest });
   }
 
@@ -153,7 +160,10 @@ export default function SettingsScreen() {
             );
           })}
           {settings.rest && Object.keys(settings.rest).length > 0 && (
-            <Button title="Back to the defaults" kind="plain" onPress={() => change({ rest: {} })} />
+            <Button title="Back to the defaults" kind="plain" onPress={() => {
+                restRef.current = {};
+                change({ rest: {} });
+              }} />
           )}
         </Card>
 
