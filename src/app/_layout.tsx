@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useEffect, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
@@ -26,6 +26,26 @@ export default function RootLayout() {
     };
   }, [scheme]);
 
+  // Tells the navigation bar whether the phone is in light or dark mode.
+  // Without this it always assumed light, so in dark mode the header drew
+  // itself light on top of our dark colors: the back button's round
+  // backing flashed bright and the clock and battery went dark-on-dark.
+  const navTheme = useMemo(() => {
+    const hex = hexColors(scheme);
+    const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: hex.accent,
+        background: hex.bg,
+        card: hex.bg,
+        text: hex.text,
+        border: hex.border,
+      },
+    };
+  }, [scheme]);
+
   useEffect(() => {
     hideSplash(startLaunchUpdateCheck());
   }, []);
@@ -33,16 +53,25 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Stack screenOptions={screenOptions}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
-        <Stack.Screen name="workout" options={{ title: 'Workout', gestureEnabled: false, headerLeft: renderNoButton }} />
-        <Stack.Screen name="science" options={{ title: 'Why this works' }} />
-        <Stack.Screen name="program" options={{ title: 'Exercises' }} />
-        <Stack.Screen name="new-block" options={{ title: 'New block' }} />
-        <Stack.Screen name="one-rm" options={{ title: '1 rep max' }} />
-        <Stack.Screen name="new-exercise" options={{ title: 'Add your own', presentation: 'modal' }} />
-        <Stack.Screen name="week-summary" options={{ title: 'Last 7 days', presentation: 'modal' }} />
-      </Stack>
+      <ThemeProvider value={navTheme}>
+        <Stack screenOptions={screenOptions}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+          <Stack.Screen
+            name="workout"
+            options={{
+              title: 'Workout',
+              gestureEnabled: false,
+              headerLeft: renderNoButton,
+            }}
+          />
+          <Stack.Screen name="science" options={{ title: 'Why this works' }} />
+          <Stack.Screen name="program" options={{ title: 'Exercises' }} />
+          <Stack.Screen name="new-block" options={{ title: 'New block' }} />
+          <Stack.Screen name="one-rm" options={{ title: '1 rep max' }} />
+          <Stack.Screen name="new-exercise" options={{ title: 'Add your own', presentation: 'modal' }} />
+          <Stack.Screen name="week-summary" options={{ title: 'Last 7 days', presentation: 'modal' }} />
+        </Stack>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
