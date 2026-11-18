@@ -25,6 +25,8 @@ export default function RootLayout() {
           headerTintColor: hex.accent,
           headerTitleStyle: { color: hex.text },
           headerShadowVisible: false,
+          // Just the back arrow, so it never shows a route name like "(tabs)"
+          headerBackButtonDisplayMode: 'minimal',
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="workout" options={{ title: 'Workout', gestureEnabled: false, headerBackVisible: false }} />
