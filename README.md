@@ -25,7 +25,7 @@ Everything is stored on the phone. Settings → Backup saves every workout and s
 
 - Name: **Every Set Counts: Lifting Plan**
 - Subtitle: **Miss a day, keep your progress**
-- Icon: a tally mark, four bars crossed by a fifth (`assets/source/icon.svg`)
+- Icon: the stacked wordmark "every / set✓ / counts" in Inter Black, "set" and the check in gold #C9A35C. Forest #26372E on cream #F3EFE6, cream on forest in dark mode, plus a tinted version (`assets/icon-*.png`, sources in `assets/source/`). The gold check alone (`mark-check`) is for tiny spots.
 
 ## Before the first build
 
