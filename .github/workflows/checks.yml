@@ -18,3 +18,6 @@ jobs:
       - run: npm test
       - run: npx tsc --noEmit
       - run: npx expo lint
+      # Fails if any package is off the version this Expo SDK expects, or if
+      # a native library is installed twice (that mismatch made the header flash)
+      - run: npx expo install --check
