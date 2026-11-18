@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Card, Muted, styles, Title } from '../../components/ui';
 import WeightChart from '../../components/WeightChart';
 import {
@@ -153,6 +153,9 @@ export default function BodyScreen() {
                 {short >= 3
                   ? `${short} short nights in a row. Catch-up sets are skipped until you get a better night. Your normal workout stays the same.`
                   : `Under ${SHORT_NIGHT_HOURS} hours counts as short. Three short nights in a row skips catch-up sets.`}
+                <Text style={{ color: colors.goldText, fontWeight: '700' }} onPress={() => router.push('/science')}>
+                  {'  Why? ›'}
+                </Text>
               </Muted>
             </>
           )}

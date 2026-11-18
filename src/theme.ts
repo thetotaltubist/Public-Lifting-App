@@ -20,16 +20,19 @@ function build(p: Palette) {
     card: dyn(p, 'card'), // cards and rows
     text: dyn(p, 'text'), // main text
     muted: dyn(p, 'muted'), // secondary text
-    accent: dyn(p, 'accent'), // the brand accent
-    accentSoft: dyn(p, 'accentSoft'), // pale accent behind badges
+    accent: dyn(p, 'accent'), // actions: forest (gold in dark mode)
+    onAccent: dyn(p, 'onAccent'), // text on an accent button
+    accentSoft: dyn(p, 'accentSoft'), // pale gold behind notes and tags
+    gold: dyn(p, 'gold'), // progress: catch-up sets, the week filling up
+    goldText: dyn(p, 'goldText'), // gold text on a pale gold tag
     border: dyn(p, 'border'), // lines
     chip: dyn(p, 'chip'), // unselected toggle backgrounds
     track: dyn(p, 'track'), // empty part of progress bars
     field: dyn(p, 'field'), // text boxes sitting on a card
     placeholder: dyn(p, 'placeholder'), // hint text in empty fields
     good: dyn(p, 'good'), // on target
-    warn: dyn(p, 'warn'), // behind or catch-up
-    danger: dyn(p, 'danger'), // delete, pain warnings
+    warn: dyn(p, 'warn'), // calm notes: short sleep, pain. Never an alarm
+    danger: dyn(p, 'danger'), // delete
   };
 }
 
@@ -48,4 +51,5 @@ export function hexColors(scheme: 'light' | 'dark') {
 }
 
 // Plain hex for places that need a string (tab tints, shadows)
-export const accentHex = '#E8590C';
+export const accentHex = '#26372E';
+export const goldHex = '#C9A35C';

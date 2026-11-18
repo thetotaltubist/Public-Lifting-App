@@ -32,7 +32,7 @@ export default function RestTimer({ rest, onChange, onDone }: { rest: Rest; onCh
   return (
     <View style={{ backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 26 }}>
       <View style={{ height: 4, borderRadius: 2, backgroundColor: colors.track, overflow: 'hidden', marginBottom: 10 }}>
-        <View style={{ width: `${progress * 100}%`, height: 4, backgroundColor: finished ? colors.good : colors.accent }} />
+        <View style={{ width: `${progress * 100}%`, height: 4, backgroundColor: colors.gold }} />
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ flex: 1 }}>
@@ -61,7 +61,7 @@ function TimerButton({ label, onPress, strong }: { label: string; onPress: () =>
       onPress={onPress}
       hitSlop={6}
       style={{ backgroundColor: strong ? colors.accent : colors.chip, borderRadius: 18, paddingVertical: 8, paddingHorizontal: 13, marginLeft: 8 }}>
-      <Text style={{ color: strong ? '#FFFFFF' : colors.text, fontWeight: '700' }}>{label}</Text>
+      <Text style={{ color: strong ? colors.onAccent : colors.text, fontWeight: '700' }}>{label}</Text>
     </Pressable>
   );
 }

@@ -2,9 +2,11 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { Card, Muted, styles, Title } from '../../components/ui';
+import { Badge, Card, Muted, styles, Title } from '../../components/ui';
+import MuscleRing from '../../components/MuscleRing';
 import { MUSCLE_NAMES } from '../../engine/exercises';
 import { blockWeek, isDeload } from '../../engine/plan';
+import { daysFor } from '../../engine/programs';
 import { weeklyRecap } from '../../engine/recap';
 import { Muscle, Session, Settings } from '../../engine/types';
 import { rollingVolume, TARGETS, targetFor } from '../../engine/volume';
@@ -33,37 +35,43 @@ export default function VolumeScreen() {
   const muscles = Object.keys(TARGETS[settings.mode]) as Muscle[];
   const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
   const recap = weeklyRecap(sessions, settings, now);
+  const rows = muscles.map((m) => ({ m, target: targetFor(m, settings, week, deload), have: done[m] ?? 0 }));
+  const totalTarget = rows.reduce((t, r) => t + r.target, 0);
+  const totalDone = rows.reduce((t, r) => t + Math.min(r.have, r.target), 0);
+  const percent = totalTarget ? Math.round((totalDone / totalTarget) * 100) : 0;
+  const owed = rows.filter((r) => r.target - r.have >= 1).map((r) => `${Math.floor(r.target - r.have)} ${MUSCLE_NAMES[r.m].toLowerCase()}`);
   const day = (d: Date) => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <ScrollView contentContainerStyle={styles.screen}>
-        <Title>Volume</Title>
-        <Muted style={{ marginBottom: 14 }}>
-          Hard sets in the last 7 days against your weekly target. Sets for a helper muscle count as half (presses count toward
-          triceps, for example), so these are close estimates.
-        </Muted>
+        <Title>Your week</Title>
+        <Muted style={{ marginBottom: 14 }}>Last 7 days · {daysFor(settings)} workouts planned</Muted>
         <Card>
-          {muscles.map((m) => {
-            const target = targetFor(m, settings, week, deload);
-            const have = done[m] ?? 0;
-            const pct = Math.min(1, target ? have / target : 0);
-            const tone = have >= target ? colors.good : have >= target * 0.7 ? colors.accent : colors.warn;
-            return (
-              <View key={m} style={{ marginBottom: 14 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                  <Text style={styles.body}>{MUSCLE_NAMES[m]}</Text>
-                  <Text style={[styles.body, { fontWeight: '700' }]}>
-                    {fmt(have)} / {target}
-                  </Text>
-                </View>
-                <View style={{ height: 8, borderRadius: 4, backgroundColor: colors.track, overflow: 'hidden' }}>
-                  <View style={{ width: `${pct * 100}%`, height: 8, backgroundColor: tone }} />
-                </View>
-              </View>
-            );
-          })}
-          <Muted>Front delts have no target of their own because chest and shoulder presses already cover them.</Muted>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <View>
+              <Text style={[styles.title, { fontSize: 36, marginBottom: 0 }]}>{percent}%</Text>
+              <Muted>of this week&apos;s sets done</Muted>
+            </View>
+            {percent >= 100 ? <Badge tone="gold" label="All done" /> : <Badge tone="gold" label="Rolling 7 days" />}
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {rows.map((r) => (
+              <MuscleRing key={r.m} label={MUSCLE_NAMES[r.m]} have={Math.round(r.have * 2) / 2} target={r.target} />
+            ))}
+          </View>
+          <Muted>
+            Helper muscles count as half a set (presses count toward triceps, for example), so these are close estimates. Front delts
+            have no target of their own because presses already cover them.
+          </Muted>
+        </Card>
+        <Card>
+          <Text style={styles.body}>
+            <Text style={{ fontWeight: '700' }}>{owed.length ? 'Still owed: ' : 'Nothing owed. '}</Text>
+            {owed.length
+              ? `${owed.join(', ')}. Your next workouts add catch-up sets to pick them up.`
+              : 'Every muscle has its sets for the last 7 days.'}
+          </Text>
         </Card>
         {recap.length > 0 && (
           <Card>
@@ -73,7 +81,7 @@ export default function VolumeScreen() {
             </Muted>
             {recap.map((w, i) => {
               const allHit = w.hit === w.total;
-              const tone = allHit ? colors.good : w.hit >= w.total * 0.7 ? colors.accent : colors.warn;
+              const tone = allHit ? colors.good : colors.goldText;
               const short = w.rows.filter((r) => r.target > 0 && r.have < r.target);
               const last = new Date(w.end.getTime() - 1);
               return (
@@ -111,7 +119,7 @@ export default function VolumeScreen() {
           </Card>
         )}
         <Text style={{ color: colors.accent, fontWeight: '600', marginTop: 4 }} onPress={() => router.push('/science')}>
-          How these targets are set
+          Why this works
         </Text>
       </ScrollView>
     </SafeAreaView>

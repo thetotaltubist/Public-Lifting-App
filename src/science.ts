@@ -1,9 +1,10 @@
 // ------------------------------------------------------------------
-// The reasoning behind the plan, shown on "How the plan works".
+// The reasoning behind the plan, shown on "Why this works".
 // Every reference is a real, published paper (or a preprint, marked).
 // ------------------------------------------------------------------
 
-export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moderate' | 'Emerging' }[] = [
+// pmids: PubMed IDs for the studies behind one entry, shown as links on it.
+export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moderate' | 'Emerging'; pmids?: string[] }[] = [
   {
     title: 'Weekly sets per muscle',
     strength: 'Strong',
@@ -107,16 +108,11 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
       'Losing about 0.5 to 1% of body weight a week keeps more muscle than losing faster. The Body tab tracks your 7-day average from Apple Health. Above 1% a week, the app tells you to eat more and pauses catch-up sets.',
   },
   {
-    title: 'Sleep',
-    strength: 'Moderate',
-    body:
-      'One short night barely affects lifting. Several in a row lower performance and recovery. After 3 nights under 6 hours, the app skips catch-up sets. Your normal workout stays the same.',
-  },
-  {
-    title: 'HRV and resting heart rate',
+    title: 'Short sleep, no extra sets',
     strength: 'Emerging',
     body:
-      'HRV-guided training mostly helps endurance athletes. For lifting, the studies are few and small, and your own performance is a better guide. The app shows these numbers but never changes your workout because of them.',
+      'One short night barely affects lifting. Several in a row lower performance and muscle building, though the studies are small. Your normal workout still helps, so after 3 nights under 6 hours you train as usual, just without catch-up sets.',
+    pmids: ['35708888', '8112265', '36136596', '33400856', '32078168'],
   },
   {
     title: 'Protein',
@@ -124,6 +120,16 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     body: 'About 1.6 g per kg a day covers most of the benefit, and more is fine. The Body tab works out your number from your weight in Apple Health. It matters most in a cut, when hunger makes it easy to fall short.',
   },
 ];
+
+// A PubMed search for a reference's title, so each one opens to the paper.
+export function pubmedSearch(reference: string) {
+  const title = reference.split('. ')[1] ?? reference;
+  return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(title)}`;
+}
+
+export function pubmedLink(pmid: string) {
+  return `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+}
 
 export const REFERENCES = [
   'Schoenfeld BJ, Ogborn D, Krieger JW. Dose-response relationship between weekly resistance training volume and increases in muscle mass. J Sports Sci. 2017;35(11):1073-1082.',
@@ -139,7 +145,6 @@ export const REFERENCES = [
   'Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.',
   'Garthe I, Raastad T, Refsnes PE, Koivisto A, Sundgot-Borgen J. Effect of two different weight-loss rates on body composition and strength and power-related performance in elite athletes. Int J Sport Nutr Exerc Metab. 2011;21(2):97-104.',
   'Knowles OE, Drinkwater EJ, Urwin CS, Lamon S, Aisbett B. Inadequate sleep and muscle strength: implications for resistance training. J Sci Med Sport. 2018;21(9):959-968.',
-  'Kiviniemi AM, Hautala AJ, Kinnunen H, Tulppo MP. Endurance training guided individually by daily heart rate variability measurements. Eur J Appl Physiol. 2007;101(6):743-751.',
   'Schoenfeld BJ, Pope ZK, Benik FM, et al. Longer interset rest periods enhance muscle strength and hypertrophy in resistance-trained men. J Strength Cond Res. 2016;30(7):1805-1812.',
   'Grgic J, Lazinica B, Mikulic P, Krieger JW, Schoenfeld BJ. The effects of short versus long inter-set rest intervals in resistance training on measures of muscle hypertrophy: a systematic review. Eur J Sport Sci. 2017;17(8):983-993.',
   'Schoenfeld BJ, Ratamess NA, Peterson MD, Contreras B, Tiryaki-Sonmez G. Influence of resistance training frequency on muscular adaptations in well-trained men. J Strength Cond Res. 2015;29(7):1821-1829.',

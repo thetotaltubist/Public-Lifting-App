@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { Redirect, Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { loadSettings } from '../../storage';
-import { accentHex, colors } from '../../theme';
+import { colors } from '../../theme';
 
-const mist = '#A9A7A1';
 
 function TabSymbol({ outline, filled, color, focused }: { outline: string; filled: string; color: any; focused: boolean }) {
   return <SymbolView name={(focused ? filled : outline) as any} tintColor={color} size={24} type="monochrome" />;
@@ -23,8 +22,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: accentHex,
-        tabBarInactiveTintColor: mist,
+        tabBarActiveTintColor: colors.text as string,
+        tabBarInactiveTintColor: colors.muted as string,
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
         tabBarLabelStyle: { fontWeight: '600', fontSize: 11 },
         tabBarLabelPosition: 'below-icon',
@@ -33,14 +32,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Next',
+          title: 'Today',
           tabBarIcon: ({ color, focused }) => <TabSymbol outline="dumbbell" filled="dumbbell.fill" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="volume"
         options={{
-          title: 'Volume',
+          title: 'Week',
           tabBarIcon: ({ color, focused }) => <TabSymbol outline="chart.bar" filled="chart.bar.fill" color={color} focused={focused} />,
         }}
       />
