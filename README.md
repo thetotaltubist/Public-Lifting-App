@@ -29,7 +29,7 @@ Everything is stored on the phone. Settings → Backup saves every workout and s
 
 ## Before the first build
 
-The app ID (`com.jdicesar.liftnew`) is a placeholder. Set the real ones in `app.json` before the first TestFlight upload, because the app ID can't change after the app is on the App Store. Then link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
+The app ID is `com.jdicesar.everysetcounts`. It can't change after the first TestFlight upload. Link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
 
 ## Run it on your iPhone or iPad
 
