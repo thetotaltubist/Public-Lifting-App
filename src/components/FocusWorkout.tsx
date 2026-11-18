@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
@@ -74,6 +74,7 @@ export default function FocusWorkout(p: Props) {
   };
   const [index, setIndex] = useState(firstUnfinished);
   const [lastLogged, setLastLogged] = useState<{ i: number; j: number } | null>(null);
+  const [picking, setPicking] = useState(false);
   const sorted = [...p.sessions].sort((a, b) => a.finishedAt.localeCompare(b.finishedAt));
 
   const i = Math.min(index, exercises.length - 1);
@@ -100,6 +101,20 @@ export default function FocusWorkout(p: Props) {
     }
     return Math.max(0, Math.round(((set?.weight ?? 0) + d * step) * 10) / 10);
   }
+
+  const pickerSheet = (
+    <ExercisePicker
+      visible={picking}
+      exercises={exercises}
+      current={i}
+      nameFor={(k) => p.liftFor(k, exercises[k].exerciseId).name}
+      onPick={(k) => {
+        setIndex(k);
+        setPicking(false);
+      }}
+      onClose={() => setPicking(false)}
+    />
+  );
 
   function done() {
     if (j < 0 || !set) return;
@@ -136,7 +151,8 @@ export default function FocusWorkout(p: Props) {
     const finishedExercise = firstOpen(logged) < 0;
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'bottom']}>
-        <TopBar {...p} index={i} />
+        <TopBar {...p} index={i} onPick={() => setPicking(true)} />
+        {pickerSheet}
         <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 28, alignItems: 'center' }}>
           <Text style={label}>Rest</Text>
           <Text style={{ color: colors.muted, fontSize: 16, marginTop: 6 }}>
@@ -175,7 +191,8 @@ export default function FocusWorkout(p: Props) {
   if (allDone) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'bottom']}>
-        <TopBar {...p} index={exercises.length} />
+        <TopBar {...p} index={exercises.length} onPick={() => setPicking(true)} />
+        {pickerSheet}
         <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
           <Text style={label}>All sets done</Text>
           <Text style={big}>Nice work.</Text>
@@ -198,15 +215,17 @@ export default function FocusWorkout(p: Props) {
   const nextOpen = exercises.findIndex((x, k) => k !== i && firstOpen(x) >= 0);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'bottom']}>
-        <TopBar {...p} index={i} />
+        <TopBar {...p} index={i} onPick={() => setPicking(true)} />
+        {pickerSheet}
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 26, paddingBottom: 20 }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag">
-          <Text style={label}>
-            Exercise {i + 1} of {exercises.length}
-            {catchUp > 0 ? ` · +${catchUp} catch-up set${catchUp > 1 ? 's' : ''}` : ''}
-          </Text>
+          <Pressable onPress={() => setPicking(true)} hitSlop={8}>
+            <Text style={label}>
+              Exercise {i + 1} of {exercises.length} ▾{catchUp > 0 ? ` · +${catchUp} catch-up set${catchUp > 1 ? 's' : ''}` : ''}
+            </Text>
+          </Pressable>
           <Text style={big}>{e.name}</Text>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={{ color: colors.muted, fontSize: 15, flex: 1 }}>{muscles}</Text>
@@ -309,17 +328,19 @@ function adjustRest(p: Props, by: number) {
   p.changeRest({ ...p.rest, endAt: Math.max(Date.now(), p.rest.endAt + by * 1000), total: Math.max(15, p.rest.total + by) });
 }
 
-function TopBar(p: Props & { index: number }) {
+// Tapping the title or the progress bar opens the list of exercises, so
+// you can go out of order when a machine is taken
+function TopBar(p: Props & { index: number; onPick: () => void }) {
   return (
-    <View>
+    <Pressable onPress={p.onPick}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 22, paddingTop: 8 }}>
         <RoundButton label="✕" onPress={p.leave} />
         <Text style={{ color: colors.muted, fontSize: 14, fontWeight: '600' }}>
-          {p.dayName} · {p.timeLeft.replace(/^About/, 'about')}
+          {p.dayName} · {p.timeLeft.replace(/^About/, 'about')} <Text style={{ color: colors.accent }}>▾</Text>
         </Text>
         <RoundButton label="≡" onPress={p.showList} />
       </View>
-      <View style={{ flexDirection: 'row', gap: 5, paddingHorizontal: 22, paddingTop: 12 }}>
+      <View style={{ flexDirection: 'row', gap: 5, paddingHorizontal: 22, paddingTop: 12, paddingBottom: 6 }}>
         {p.exercises.map((x, k) => (
           <View
             key={k}
@@ -332,7 +353,59 @@ function TopBar(p: Props & { index: number }) {
           />
         ))}
       </View>
-    </View>
+    </Pressable>
+  );
+}
+
+function ExercisePicker({
+  visible,
+  exercises,
+  current,
+  nameFor,
+  onPick,
+  onClose,
+}: {
+  visible: boolean;
+  exercises: LoggedExercise[];
+  current: number;
+  nameFor: (k: number) => string;
+  onPick: (k: number) => void;
+  onClose: () => void;
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }} onPress={onClose} />
+      <View style={{ backgroundColor: colors.bg, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 22, paddingBottom: 40 }}>
+        <Text style={label}>Pick an exercise</Text>
+        <Text style={{ color: colors.muted, fontSize: 14, marginTop: 4, marginBottom: 12 }}>Machine taken? Do any of them in any order.</Text>
+        {exercises.map((x, k) => {
+          const done = x.sets.filter((s) => s.done).length;
+          const finished = done === x.sets.length;
+          const status = finished ? 'Done' : done > 0 ? `${done} of ${x.sets.length} sets` : `${x.sets.length} sets`;
+          return (
+            <Pressable
+              key={k}
+              onPress={() => onPick(k)}
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: 14,
+                paddingHorizontal: 14,
+                marginBottom: 8,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: k === current ? colors.gold : colors.border,
+                backgroundColor: colors.card,
+                opacity: pressed ? 0.7 : 1,
+              })}>
+              <Text style={{ width: 26, color: finished ? colors.good : colors.muted, fontWeight: '800' }}>{finished ? '✓' : k + 1}</Text>
+              <Text style={{ flex: 1, color: finished ? colors.muted : colors.text, fontSize: 16, fontWeight: '700' }}>{nameFor(k)}</Text>
+              <Text style={{ color: colors.muted, fontSize: 14 }}>{status}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </Modal>
   );
 }
 
