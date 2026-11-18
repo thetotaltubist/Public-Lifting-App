@@ -30,19 +30,21 @@ export default function ScienceScreen() {
     }, [])
   );
 
+  // Draw once, after settings load, like the other pushed screens. Adding
+  // the block card a moment after the screen appeared made the header redraw.
+  if (!settings) return null;
+
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Muted style={{ marginBottom: 14 }}>What the plan is based on, how sure the research is, and the studies themselves.</Muted>
-      {settings && (
-        <Card style={{ backgroundColor: colors.accentSoft, borderColor: colors.accentSoft }}>
-          <Text style={[styles.h2, { marginBottom: 2 }]}>Your block: {programFor(settings).name}</Text>
-          <Muted style={{ marginBottom: 8 }}>
-            {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
-          </Muted>
-          <Text style={[styles.body, { marginBottom: 8 }]}>{programFor(settings).guidance}</Text>
-          <Text style={styles.body}>{goalInfo(goalFor(settings)).guidance}</Text>
-        </Card>
-      )}
+      <Card style={{ backgroundColor: colors.accentSoft, borderColor: colors.accentSoft }}>
+        <Text style={[styles.h2, { marginBottom: 2 }]}>Your block: {programFor(settings).name}</Text>
+        <Muted style={{ marginBottom: 8 }}>
+          {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
+        </Muted>
+        <Text style={[styles.body, { marginBottom: 8 }]}>{programFor(settings).guidance}</Text>
+        <Text style={styles.body}>{goalInfo(goalFor(settings)).guidance}</Text>
+      </Card>
       {SCIENCE.map((s) => (
         <Card key={s.title}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>

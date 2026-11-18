@@ -19,8 +19,10 @@ export default function RootLayout() {
       headerTintColor: hex.accent,
       headerTitleStyle: { color: hex.text },
       headerShadowVisible: false,
-      // Just the back arrow, so it never shows a route name like "(tabs)"
-      headerBackButtonDisplayMode: 'minimal' as const,
+      // A fixed "Back" label, so iOS never works one out from the previous
+      // screen (which showed "(tabs)" and redrew the button as it changed)
+      headerBackTitle: 'Back',
+      headerBackButtonMenuEnabled: false,
     };
   }, [scheme]);
 
