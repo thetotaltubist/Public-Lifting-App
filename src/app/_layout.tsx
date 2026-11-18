@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -9,7 +9,20 @@ import { colors, hexColors } from '../theme';
 
 export default function RootLayout() {
   const scheme = useColorScheme() === 'light' ? 'light' : 'dark';
-  const hex = hexColors(scheme);
+  // Built once per light/dark mode, so the header (and its back button)
+  // isn't redrawn every time this layout renders
+  const screenOptions = useMemo(() => {
+    const hex = hexColors(scheme);
+    return {
+      contentStyle: { backgroundColor: colors.bg },
+      headerStyle: { backgroundColor: hex.bg },
+      headerTintColor: hex.accent,
+      headerTitleStyle: { color: hex.text },
+      headerShadowVisible: false,
+      // Just the back arrow, so it never shows a route name like "(tabs)"
+      headerBackButtonDisplayMode: 'minimal' as const,
+    };
+  }, [scheme]);
 
   useEffect(() => {
     hideSplash(startLaunchUpdateCheck());
@@ -18,16 +31,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          contentStyle: { backgroundColor: colors.bg },
-          headerStyle: { backgroundColor: hex.bg },
-          headerTintColor: hex.accent,
-          headerTitleStyle: { color: hex.text },
-          headerShadowVisible: false,
-          // Just the back arrow, so it never shows a route name like "(tabs)"
-          headerBackButtonDisplayMode: 'minimal',
-        }}>
+      <Stack screenOptions={screenOptions}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="workout" options={{ title: 'Workout', gestureEnabled: false, headerBackVisible: false }} />
         <Stack.Screen name="science" options={{ title: 'Why this works' }} />
