@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
@@ -45,6 +45,14 @@ function firstOpen(ex: LoggedExercise) {
   return ex.sets.findIndex((s) => !s.done);
 }
 
+function lastWeight(id: string, sessions: Session[]) {
+  for (let k = sessions.length - 1; k >= 0; k--) {
+    const w = sessions[k].exercises.find((e) => e.exerciseId === id)?.sets.find((s) => s.done && s.weight != null)?.weight;
+    if (w != null) return w;
+  }
+  return null;
+}
+
 function lastTime(id: string, sessions: Session[], unit: Settings['unit']) {
   for (let k = sessions.length - 1; k >= 0; k--) {
     const ex = sessions[k].exercises.find((e) => e.exerciseId === id);
@@ -83,6 +91,16 @@ export default function FocusWorkout(p: Props) {
   const reps = set?.reps ?? defaultReps;
   const step = unit === 'kg' ? (fromDisplay('2.5', 'kg') ?? 5.5) : e.increment || 5;
 
+  // From an empty box, + and − start at the weight from earlier sets
+  // of this exercise today, or last time, before stepping
+  function stepWeight(d: number) {
+    if (set?.weight == null) {
+      const start = [...ex.sets].reverse().find((s) => s.weight != null)?.weight ?? lastWeight(ex.exerciseId, sorted);
+      if (start != null) return start;
+    }
+    return Math.max(0, Math.round(((set?.weight ?? 0) + d * step) * 10) / 10);
+  }
+
   function done() {
     if (j < 0 || !set) return;
     if (set.weight == null) return;
@@ -119,7 +137,7 @@ export default function FocusWorkout(p: Props) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'bottom']}>
         <TopBar {...p} index={i} />
-        <ScrollView contentContainerStyle={{ padding: 24, alignItems: 'center' }}>
+        <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 28, alignItems: 'center' }}>
           <Text style={label}>Rest</Text>
           <Text style={{ color: colors.muted, fontSize: 16, marginTop: 6 }}>
             Set {lastLogged.j + 1} logged · {loggedSet.weight != null ? `${toDisplay(loggedSet.weight, unit)} ${unit} × ` : ''}
@@ -180,7 +198,6 @@ export default function FocusWorkout(p: Props) {
   const nextOpen = exercises.findIndex((x, k) => k !== i && firstOpen(x) >= 0);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <TopBar {...p} index={i} />
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 26, paddingBottom: 20 }}
@@ -207,7 +224,7 @@ export default function FocusWorkout(p: Props) {
                   caption={unit}
                   decimal
                   onText={(t) => p.changeSet(i, j, { weight: fromDisplay(t, unit) })}
-                  onStep={(d) => p.changeSet(i, j, { weight: Math.max(0, Math.round(((set.weight ?? 0) + d * step) * 10) / 10) })}
+                  onStep={(d) => p.changeSet(i, j, { weight: stepWeight(d) })}
                 />
                 <BigNumber
                   value={String(reps)}
@@ -283,7 +300,6 @@ export default function FocusWorkout(p: Props) {
             {i < exercises.length - 1 ? <LinkText label="Skip exercise ›" onPress={() => setIndex(i + 1)} /> : <View />}
           </View>
         </View>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -378,14 +394,14 @@ function PainCheck({
   return (
     <View style={{ alignSelf: 'stretch', marginTop: 20 }}>
       <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>Any joint or muscle pain on {name}? Optional (10 = worst).</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+      <View style={{ flexDirection: 'row', gap: 4 }}>
         {Array.from({ length: 11 }, (_, n) => (
           <Pressable
             key={n}
             onPress={() => onChange((x) => ({ ...x, pain: n, painArea: n > 0 ? x.painArea : null }))}
             style={{
-              width: 34,
-              height: 32,
+              flex: 1,
+              height: 34,
               borderRadius: 8,
               alignItems: 'center',
               justifyContent: 'center',
@@ -395,8 +411,9 @@ function PainCheck({
           </Pressable>
         ))}
       </View>
+      {!!ex.pain && <Text style={{ color: colors.muted, fontSize: 14, marginTop: 12 }}>Where?</Text>}
       {!!ex.pain && (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
           {areas.map((a) => (
             <Pressable
               key={a}
@@ -447,7 +464,6 @@ function BigNumber({
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
         placeholder="—"
         placeholderTextColor={colors.placeholder}
-        selectTextOnFocus
         style={{ color: colors.text, fontSize: 60, fontWeight: '900', letterSpacing: -2, textAlign: 'center', minWidth: 120, padding: 0 }}
       />
       <Text style={{ color: colors.muted, fontSize: 14, fontWeight: '600' }}>{caption}</Text>
