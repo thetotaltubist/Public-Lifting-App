@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Badge, Button, Card, Chip, Muted, styles, Title } from '../../components/ui';
 import { day, exercise } from '../../engine/exercises';
-import { deloadSuggestion, Plan, planNext, rotationFor } from '../../engine/plan';
+import { Plan, StallCheck, stallCheck, planMinutes, planNext, rotationFor } from '../../engine/plan';
 import { programFor } from '../../engine/programs';
 import { Session, Settings } from '../../engine/types';
 import { loadActive, loadSessions, loadSettings, saveActive, toDisplay, updateSettings } from '../../storage';
@@ -20,12 +20,14 @@ export default function NextScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [hasActive, setHasActive] = useState(false);
   const [choosing, setChoosing] = useState(false);
+  const [stall, setStall] = useState<StallCheck | null>(null);
 
   const refresh = useCallback(async () => {
     const [s, all, active, health] = await Promise.all([loadSettings(), loadSessions(), loadActive(), loadHealth()]);
     setSettings(s);
     setSessions(all);
     setPlan(planNext(all, s, new Date(), health));
+    setStall(stallCheck(all, s, new Date(), health));
     setHasActive(!!active);
   }, []);
 
@@ -83,7 +85,6 @@ export default function NextScreen() {
     ]);
   }
 
-  const deloadTip = deloadSuggestion(sessions, settings, new Date());
   // Nothing logged yet in this block
   const blockJustStarted = !plan.deload && !hasActive && !sessions.some((s) => s.finishedAt >= settings.blockStart);
   const totalSets = plan.exercises.reduce((t, e) => t + e.sets, 0);
@@ -94,7 +95,7 @@ export default function NextScreen() {
         <Muted>{plan.deload ? 'Deload week' : `Block week ${plan.blockWeek + 1}`} · {programFor(settings).name} · {settings.mode === 'cut' ? 'Cut' : 'Build'}</Muted>
         <Title>Today: {plan.day.name}</Title>
         <Muted style={{ marginBottom: 14 }}>
-          {plan.exercises.length} exercises · {totalSets} sets
+          {plan.exercises.length} exercises · {totalSets} sets · about {planMinutes(plan, settings)} min
         </Muted>
 
         {hasActive && (
@@ -131,11 +132,16 @@ export default function NextScreen() {
           </Card>
         ))}
 
-        {deloadTip && (
+        {stall && (
           <Card>
-            <Text style={styles.h2}>Time for a lighter week?</Text>
-            <Muted style={{ marginVertical: 8 }}>{deloadTip}</Muted>
-            <Button title="Start deload week" kind="plain" onPress={startDeload} />
+            <Text style={styles.h2}>{stall.title}</Text>
+            <Muted style={{ marginVertical: 8 }}>
+              {stall.text}{' '}
+              <Text style={{ color: colors.goldText, fontWeight: '700' }} onPress={() => router.push('/science')}>
+                Why? ›
+              </Text>
+            </Muted>
+            {stall.kind === 'deload' && <Button title="Start deload week" kind="plain" onPress={startDeload} />}
           </Card>
         )}
 
@@ -169,12 +175,16 @@ export default function NextScreen() {
                   ? 'Start with any day you like. The rotation carries on from there.'
                   : 'Do a different day instead. The rotation carries on from whatever you do.'}
               </Muted>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
                 {rotationFor(settings).map((id) => day(id)).map((d) => (
-                  <Chip key={d.id} label={d.name} selected={d.id === plan.day.id} onPress={() => chooseDay(d.id)} />
+                  <Chip key={d.id} fill label={d.name} selected={d.id === plan.day.id} onPress={() => chooseDay(d.id)} />
                 ))}
-                {settings.nextDayOverride && <Chip label="Back to the rotation" onPress={() => chooseDay(null)} />}
               </View>
+              {settings.nextDayOverride && (
+                <View style={{ flexDirection: 'row' }}>
+                  <Chip label="Back to the rotation" onPress={() => chooseDay(null)} />
+                </View>
+              )}
             </>
           ) : (
             <Button title="Do a different day" kind="plain" onPress={() => setChoosing(true)} />

@@ -1,7 +1,8 @@
 import { DAYS, day, exercise } from './exercises';
-import { catchUpPause, HealthData } from './health';
+import { catchUpPause, HealthData, shortNightStreak } from './health';
 import { daysFor, goalFor, programFor, withGoalReps } from './programs';
 import { suggest, Suggestion } from './progression';
+import { estimateMinutes } from './rest';
 import { DAY_MS, addCredit, creditFor, rollingVolume, targetFor } from './volume';
 import { DayTemplate, Goal, Muscle, Session, Settings } from './types';
 
@@ -116,23 +117,73 @@ function distribute(total: number, weights: number[], minSets: number[]) {
   return out.map((n, i) => Math.max(minSets[i], Math.min(5, n)));
 }
 
-export function deloadSuggestion(sessions: Session[], settings: Settings, now: Date): string | null {
+// Lifts whose latest session in the last 7 days counts as stalled
+// (3 sessions at one weight without more reps, see progression.ts).
+// Each lift counts once, however many times it came up this week.
+export function stalledLifts(sessions: Session[], settings: Settings, now: Date): string[] {
+  const all = sortedSessions(sessions);
+  const latest = new Map<string, string>(); // exercise id -> finishedAt of its latest session this week
+  for (const s of all) {
+    if (now.getTime() - new Date(s.finishedAt).getTime() >= 7 * DAY_MS) continue;
+    for (const ex of s.exercises) latest.set(ex.exerciseId, s.finishedAt);
+  }
+  const out: string[] = [];
+  for (const [id, at] of latest) {
+    const r = suggest(id, all.filter((x) => x.finishedAt <= at), { comeback: false, deload: false, goal: goalFor(settings) });
+    if (r.stalled) out.push(id);
+  }
+  return out;
+}
+
+export const STALLED_LIFTS_FOR_NOTE = 3;
+// A deload for stalls only from the 5th week of a block: most coaches
+// deload every 4-6 weeks, and earlier stalls are usually short-term fatigue
+export const STALL_DELOAD_FROM_WEEK = 4; // 0-based, so the 5th week
+export const LONG_BLOCK_WEEK = 6; // 0-based, so the 7th week
+
+export type StallCheck = { kind: 'deload' | 'recovery'; title: string; text: string; lifts: string[] };
+
+// What to say when lifts stall. Early in a block, or at any point in a
+// cut, a stall gets a recovery note (more rest on those lifts, sleep,
+// protein) instead of a lighter week. See science.ts.
+export function stallCheck(sessions: Session[], settings: Settings, now: Date, health: HealthData | null = null): StallCheck | null {
   if (isDeload(settings, now)) return null;
   const week = blockWeek(settings, now);
-  if (week >= 6) return `You're in week ${week + 1} of this block. A lighter week will help you recover and set up the next block.`;
-  if (week < 3) return null;
-  // Performance slipping: several exercises lost reps at the same weight recently
-  const recent = sortedSessions(sessions).filter((s) => now.getTime() - new Date(s.finishedAt).getTime() < 7 * DAY_MS);
-  let slipping = 0;
-  for (const s of recent) {
-    for (const ex of s.exercises) {
-      const r = suggest(ex.exerciseId, sessions.filter((x) => x.finishedAt <= s.finishedAt), { comeback: false, deload: false, goal: goalFor(settings) });
-      if (r.stalled) slipping++;
-    }
+  const lifts = stalledLifts(sessions, settings, now);
+  if (week >= LONG_BLOCK_WEEK) {
+    return {
+      kind: 'deload',
+      title: 'Time for a lighter week?',
+      text: `You're in week ${week + 1} of this block. A lighter week will help you recover and set up the next block.`,
+      lifts,
+    };
   }
-  return slipping >= 3
-    ? `${slipping} exercises have stalled this week. That points to fatigue, so a deload week is worth considering.`
-    : null;
+  if (lifts.length < STALLED_LIFTS_FOR_NOTE) return null;
+  const names = lifts.map((id) => exercise(id).name);
+  const list = names.length > 3 ? `${names.slice(0, 3).join(', ')} and ${names.length - 3} more` : names.join(', ');
+  const cut = settings.mode === 'cut';
+  if (!cut && week >= STALL_DELOAD_FROM_WEEK) {
+    return {
+      kind: 'deload',
+      title: 'Time for a lighter week?',
+      text: `${lifts.length} lifts have stalled (${list}) in week ${week + 1} of this block. That points to built-up fatigue, so a lighter week is worth considering.`,
+      lifts,
+    };
+  }
+  const short = health ? shortNightStreak(health.sleep, now) : 0;
+  const sleep =
+    short >= 2
+      ? `You've had ${short} short nights in a row, and sleep loss lowers strength, so sleep is the first thing to fix. `
+      : 'Aim for 7 or more hours of sleep. ';
+  const why = cut
+    ? "In a cut that's expected: eating less slows progress, and holding your weights is a win."
+    : `In week ${week + 1}, that's usually short-term fatigue, not a sign you need a lighter week.`;
+  return {
+    kind: 'recovery',
+    title: 'A few lifts have stalled',
+    text: `${lifts.length} lifts haven't moved in 3 sessions (${list}). ${why} For the next week, the rest timer adds a minute on those lifts. ${sleep}Keep protein up.`,
+    lifts,
+  };
 }
 
 export function planNext(sessions: Session[], settings: Settings, now = new Date(), health: HealthData | null = null): Plan {
@@ -241,4 +292,10 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
   if (caught > 0) notes.push(`${caught} catch-up ${caught === 1 ? 'set' : 'sets'} added for muscles that fell behind this week.`);
 
   return { day: template, exercises, blockWeek: week, deload, comeback, notes };
+}
+
+// About how long today's workout takes, rest included (see rest.ts)
+export function planMinutes(plan: Plan, settings: Settings) {
+  const items = plan.exercises.map((p) => ({ exercise: exercise(p.exerciseId), sets: p.sets, repMin: p.repMin }));
+  return estimateMinutes(items, plan.deload, goalFor(settings), settings.rest);
 }

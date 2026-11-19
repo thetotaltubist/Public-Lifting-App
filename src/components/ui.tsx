@@ -37,11 +37,21 @@ export function Button({
   );
 }
 
-export function Chip({ label, selected, onPress }: { label: string; selected?: boolean; onPress: () => void }) {
+// fill: share a single row evenly with the chips beside it, shrinking the
+// text a little if a label is long, instead of wrapping onto a second line
+export function Chip({ label, selected, onPress, fill }: { label: string; selected?: boolean; onPress: () => void; fill?: boolean }) {
   const colors = themeColors();
   return (
-    <Pressable onPress={onPress} style={[styles.chip, { backgroundColor: selected ? colors.accent : colors.chip }]}>
-      <Text style={{ color: selected ? colors.onAccent : colors.text, fontWeight: '600', fontSize: 14 }}>{label}</Text>
+    <Pressable
+      onPress={onPress}
+      style={[styles.chip, fill && styles.chipFill, { backgroundColor: selected ? colors.accent : colors.chip }]}>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit={fill}
+        minimumFontScale={0.75}
+        style={{ color: selected ? colors.onAccent : colors.text, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -67,6 +77,7 @@ const base = {
   button: { borderRadius: 16, paddingVertical: 15, paddingHorizontal: 22, alignItems: 'center' },
   buttonText: { fontSize: 17, fontWeight: '800' },
   chip: { borderRadius: 16, paddingVertical: 7, paddingHorizontal: 13, marginRight: 8, marginBottom: 8 },
+  chipFill: { flex: 1, paddingHorizontal: 4, marginRight: 0, alignItems: 'center' },
   badge: { borderRadius: 99, paddingVertical: 3, paddingHorizontal: 9, alignSelf: 'flex-start' },
   screen: { padding: 16, paddingBottom: 48 },
 } satisfies Record<string, ViewStyle | TextStyle>;
