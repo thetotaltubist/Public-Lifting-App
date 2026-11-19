@@ -14,7 +14,7 @@
       "bundleIdentifier": "com.jdicesar.everysetcounts",
       "supportsTablet": true,
       "appleTeamId": "7V9S64W92Z",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSHealthShareUsageDescription": "Reads your weight and sleep from Apple Health to keep a cut from costing muscle and to skip extra sets after short nights. Nothing is written to Health.",
@@ -49,6 +49,18 @@
     ],
     "experiments": {
       "typedRoutes": false
+    },
+    "owner": "jdicesar24",
+    "updates": {
+      "url": "https://u.expo.dev/6c69c983-f730-46e3-8f99-017ee5fd64ba",
+      "requestHeaders": {
+        "expo-channel-name": "production"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6c69c983-f730-46e3-8f99-017ee5fd64ba"
+      }
     }
   }
 }

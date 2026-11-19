@@ -30,7 +30,7 @@ Everything is stored on the phone. Settings → Backup saves every workout and s
 
 ## Before the first build
 
-The app ID is `com.jdicesar.everysetcounts`. It can't change after the first TestFlight upload. Link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
+The app ID is `com.jdicesar.everysetcounts`. It can't change after the first TestFlight upload. The Expo project is `@jdicesar24/every-set-counts` (its own project, separate from the personal app), and over-the-air updates are set up in `app.json`. Builds made on the Mac ask for the `production` channel too, so they get the same updates as TestFlight.
 
 ## Run it on your iPhone or iPad
 
@@ -41,7 +41,7 @@ npx expo run:ios --device
 
 ## Over-the-air updates
 
-Once the Expo project is linked (above):
+Only builds that were made after updates were set up (build 3 and later) can get them.
 
 ```bash
 git checkout main && git pull
