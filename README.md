@@ -26,7 +26,7 @@ Everything is stored on the phone. Settings → Backup saves every workout and s
 - Name: **Every Set Counts: Lifting Plan**
 - Subtitle: **Miss a day, keep your progress**
 - Under the icon on the home screen: **Every Set** (`expo.name` in `app.json`), so it isn't cut off
-- Icon: the stacked wordmark "every / set✓ / counts" in Inter Black, "set" and the check in gold #C9A35C. Forest #26372E on cream #F3EFE6, cream on forest in dark mode, plus a tinted version (`assets/icon-*.png`, sources in `assets/source/`). The gold check alone (`mark-check`) is for tiny spots.
+- Icon: the stacked wordmark "every / set / counts" in Inter Black, with "set" and a dumbbell in gold #C9A35C. Forest #26372E on cream #F3EFE6, cream on forest in dark mode, plus a tinted version (`assets/icon-*.png`, sources in `assets/source/`). The splash screen uses the same image. The old gold check (`mark-check`) is no longer used in the app.
 
 ## Before the first build
 
