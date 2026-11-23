@@ -7,12 +7,19 @@ import { day, exercise } from '../../engine/exercises';
 import { deloadSuggestion, Plan, planNext, rotationFor } from '../../engine/plan';
 import { programFor } from '../../engine/programs';
 import { Session, Settings } from '../../engine/types';
+import { PlannedSet } from '../../engine/wave';
 import { loadActive, loadSessions, loadSettings, saveActive, toDisplay, updateSettings } from '../../storage';
 import { loadHealth, refreshHealth } from '../../health';
 import { colors } from '../../theme';
 
 // "5" rather than "5-5" for a fixed rep count
 const reps = (lo: number, hi: number) => (lo === hi ? String(lo) : `${lo}-${hi}`);
+
+// Sets that each have their own weight, like "5 @ 135, 5 @ 155, 5+ @ 175 lb"
+function setList(sets: PlannedSet[], unit: Settings['unit']) {
+  const list = sets.map((x) => `${x.reps}${x.asMany ? '+' : ''}${x.weight != null ? ` @ ${toDisplay(x.weight, unit)}` : ''}`).join(', ');
+  return sets.some((x) => x.weight != null) ? `${list} ${unit}` : list;
+}
 
 export default function NextScreen() {
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -58,7 +65,8 @@ export default function NextScreen() {
         catchUpSets: e.catchUpSets,
         pain: null,
         painArea: null,
-        sets: Array.from({ length: e.sets }, () => ({ weight: e.suggestion.weight, reps: null, rir: null, done: false })),
+        ...(e.waveWeek != null ? { trainingMax: e.trainingMax, waveWeek: e.waveWeek } : {}),
+        sets: Array.from({ length: e.sets }, (_, k) => ({ weight: e.setPlan?.[k]?.weight ?? e.suggestion.weight, reps: null, rir: null, done: false })),
       })),
     });
     router.push('/workout');
@@ -139,18 +147,20 @@ export default function NextScreen() {
           </Card>
         )}
 
-        {plan.exercises.map((e) => {
+        {plan.exercises.map((e, i) => {
           const ex = exercise(e.exerciseId);
           const w = e.suggestion.weight;
           return (
-            <Card key={e.templateExerciseId}>
+            <Card key={`${i}-${e.templateExerciseId}`}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Text style={[styles.h2, { flex: 1, marginRight: 8 }]}>{ex.name}</Text>
                 {e.catchUpSets > 0 && <Badge tone="gold" label={`+${e.catchUpSets} catch-up`} />}
               </View>
               <Text style={[styles.body, { marginTop: 4 }]}>
-                {e.sets} × {reps(e.repMin ?? ex.repMin, e.repMax ?? ex.repMax)}
-                {w != null ? ` @ ${toDisplay(w, settings.unit)} ${settings.unit}` : ''} · {e.rirTarget} RIR
+                {e.setPlan && e.setPlan.some((x) => x.weight !== w || x.reps !== e.setPlan![0].reps || x.asMany)
+                  ? setList(e.setPlan, settings.unit)
+                  : `${e.sets} × ${reps(e.repMin ?? ex.repMin, e.repMax ?? ex.repMax)}${w != null ? ` @ ${toDisplay(w, settings.unit)} ${settings.unit}` : ''}`}{' '}
+                · {e.rirTarget} RIR
               </Text>
               <Muted style={{ marginTop: 4 }}>{e.suggestion.why}</Muted>
             </Card>

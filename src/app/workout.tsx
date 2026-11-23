@@ -7,6 +7,7 @@ import RestTimer, { Rest } from '../components/RestTimer';
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { alternativesFor, exercise, painAreasFor } from '../engine/exercises';
 import { goalFor, withGoalReps } from '../engine/programs';
+import { PlannedExercise } from '../engine/plan';
 import { suggest } from '../engine/progression';
 import { restReason, restSeconds } from '../engine/rest';
 import { cancelRestAlert, scheduleRestAlert } from '../restAlert';
@@ -26,6 +27,13 @@ import {
 import { colors } from '../theme';
 
 const RIR_CHOICES = [0, 1, 2, 3, 4];
+
+// The reps to aim for on one set: its own when the plan has one per set
+function repHint(planned: PlannedExercise | undefined, set: number) {
+  const own = planned?.setPlan?.[set];
+  if (own) return `${own.reps}${own.asMany ? '+' : ''}`;
+  return planned?.suggestion.targetReps ? String(planned.suggestion.targetReps) : '—';
+}
 
 // Keeps the typed text (like "27.") while the number is still being entered,
 // so the decimal point doesn't vanish before the next digit.
@@ -196,6 +204,9 @@ export default function WorkoutScreen() {
             changeExercise(i, (e) => ({
               ...e,
               exerciseId: o.id,
+              // A training max belongs to the lift it was set on
+              trainingMax: undefined,
+              waveWeek: undefined,
               pain: null,
               painArea: null,
               sets: e.sets.map(() => ({ weight: s.weight, reps: null, rir: null, done: false })),
@@ -277,7 +288,11 @@ export default function WorkoutScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, marginBottom: 10 }}>
                 <Muted>
                   {e.repMin === e.repMax ? e.repMin : `${e.repMin}-${e.repMax}`} reps · {planned?.rirTarget ?? '1-2'} in reserve
-                  {planned?.suggestion.targetReps ? ` · aim ${planned.suggestion.targetReps}+` : ''}
+                  {planned?.setPlan?.some((x) => x.asMany)
+                    ? ' · last set: as many as you can'
+                    : planned?.suggestion.targetReps
+                      ? ` · aim ${planned.suggestion.targetReps}+`
+                      : ''}
                 </Muted>
                 {(ex.catchUpSets ?? 0) > 0 && (
                   <View style={{ marginLeft: 8 }}>
@@ -315,7 +330,7 @@ export default function WorkoutScreen() {
                     style={[field, { width: 46, marginRight: 6 }]}
                     keyboardType="number-pad"
                     value={s.reps == null ? '' : String(s.reps)}
-                    placeholder={planned?.suggestion.targetReps ? String(planned.suggestion.targetReps) : '—'}
+                    placeholder={repHint(planned, j)}
                     placeholderTextColor={colors.placeholder}
                     onChangeText={(t) => changeSet(i, j, { reps: t ? parseInt(t, 10) || 0 : null })}
                     editable={!s.done}
