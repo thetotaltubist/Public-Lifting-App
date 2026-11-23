@@ -474,3 +474,89 @@ test('a backup round-trips, and bad files change nothing', () => {
   assert.ok('error' in readBackup(JSON.stringify({ ...JSON.parse(raw), sessions: null })));
   assert.equal(backupFileName(new Date(2026, 0, 5)), 'lifting-backup-2026-01-05.json');
 });
+
+// ---------- Strength + Size: heavy wave, then 5 sets of 10 ----------
+
+test('Strength + Size waves the main lift and raises the training max after a good wave', () => {
+  const s = withProgram('strength-size', 'strength', 4);
+  // A squat from another program sets the first training max
+  let sessions: Session[] = [
+    {
+      id: 'old',
+      dayId: 'legs-a',
+      startedAt: at(-3).toISOString(),
+      finishedAt: at(-3).toISOString(),
+      exercises: [{ exerciseId: 'barbell-squat', sets: [{ weight: 200, reps: 5, rir: 1, done: true }] }],
+    },
+  ];
+  const tms: number[] = [];
+  const weeks: number[] = [];
+  for (let d = 0; d < 40; d += 2) {
+    const plan = planNext(sessions, s, at(d));
+    assert.ok(plan.day.id.startsWith('ss-'));
+    for (const e of plan.exercises) assert.equal(e.catchUpSets, 0);
+    const main = plan.exercises[0];
+    assert.equal(main.setPlan?.length, 3);
+    if (plan.day.id === 'ss-squat') {
+      tms.push(main.trainingMax!);
+      weeks.push(main.waveWeek!);
+      const volume = plan.exercises.filter((e) => e.exerciseId === 'barbell-squat');
+      // The 5 sets of 10 drop out in the light week
+      assert.equal(volume.length, main.waveWeek === 3 ? 1 : 2);
+      if (main.waveWeek !== 3) assert.deepEqual(volume[1].setPlan!.map((x) => x.reps), [10, 10, 10, 10, 10]);
+      assert.equal(main.setPlan![2].asMany, main.waveWeek !== 3);
+    }
+    // Log every set as planned, with a couple of extra reps on the last heavy one
+    sessions = [
+      ...sessions,
+      {
+        id: `ss${d}`,
+        dayId: plan.day.id,
+        startedAt: at(d).toISOString(),
+        finishedAt: at(d).toISOString(),
+        exercises: plan.exercises.map((e) => ({
+          exerciseId: e.exerciseId,
+          ...(e.waveWeek != null ? { trainingMax: e.trainingMax, waveWeek: e.waveWeek } : {}),
+          sets: (e.setPlan ?? Array.from({ length: e.sets }, () => ({ weight: 100, reps: 10 }))).map((x) => ({
+            weight: x.weight ?? 100,
+            reps: x.reps + ('asMany' in x && x.asMany ? 2 : 0),
+            rir: 1,
+            done: true,
+          })),
+        })),
+      },
+    ];
+  }
+  assert.deepEqual(weeks, [0, 1, 2, 3, 0]);
+  // 90% of the estimated max from 200 x 5, then up 10 lb for a lower body lift
+  const first = Math.round((estimate1RM(200, 5) * 0.9) / 5) * 5;
+  assert.deepEqual(tms, [first, first, first, first, first + 10]);
+});
+
+test('Strength + Size holds the training max when a heavy set comes up short', () => {
+  const s = withProgram('strength-size', 'strength', 4);
+  const log = (d: number, week: number, reps: number): Session => ({
+    id: `b${d}`,
+    dayId: 'ss-bench',
+    startedAt: at(d).toISOString(),
+    finishedAt: at(d).toISOString(),
+    exercises: [{ exerciseId: 'barbell-bench', trainingMax: 200, waveWeek: week, sets: [{ weight: 190, reps, rir: 0, done: true }] }],
+  });
+  // The last set of the week of 3s only got 2
+  const sessions = [log(0, 0, 6), log(7, 1, 2), log(14, 2, 2), log(21, 3, 5)];
+  const plan = planNext(sessions, { ...s, nextDayOverride: 'ss-bench' }, at(28));
+  const main = plan.exercises[0];
+  assert.equal(main.waveWeek, 0);
+  assert.equal(main.trainingMax, 200);
+  // A made wave goes up 5 lb for an upper body lift
+  const good = [log(0, 0, 6), log(7, 1, 4), log(14, 2, 2), log(21, 3, 5)];
+  assert.equal(planNext(good, { ...s, nextDayOverride: 'ss-bench' }, at(28)).exercises[0].trainingMax, 205);
+});
+
+test('Strength + Size asks for a starting weight the first time', () => {
+  const plan = planNext([], withProgram('strength-size', 'strength', 4), at(0));
+  const main = plan.exercises[0];
+  assert.equal(main.suggestion.weight, null);
+  assert.equal(main.trainingMax, undefined);
+  assert.ok(main.suggestion.why.startsWith('First time'));
+});

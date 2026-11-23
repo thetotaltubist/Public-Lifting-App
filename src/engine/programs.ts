@@ -20,7 +20,7 @@ export type Program = {
   ideal: number[]; // days a week it's built for
   goals: Goal[]; // goals it suits
   focus?: Goal; // built for this goal, so it ranks first for it
-  fixedSets?: boolean; // keeps its own sets every session (5x5), no scaling or catch-up
+  fixedSets?: boolean; // keeps its own sets every session (5x5, Strength + Size), no scaling or catch-up
   guidance: string;
 };
 
@@ -59,6 +59,19 @@ export const PROGRAMS: Program[] = [
     goals: ['strength', 'hypertrophy', 'endurance'],
     guidance:
       'Each muscle gets trained twice a week in 4 sessions, which is where the research puts the sweet spot for size and strength. Sessions are shorter than full body, and it fits easily around a busy week.',
+  },
+  {
+    id: 'strength-size',
+    name: 'Strength + Size',
+    short: 'One heavy lift a day, then 5 sets of 10',
+    days: ['ss-press', 'ss-deadlift', 'ss-bench', 'ss-squat'],
+    fits: [3, 4],
+    ideal: [4],
+    goals: ['strength', 'hypertrophy'],
+    focus: 'strength',
+    fixedSets: true,
+    guidance:
+      'Four days, each built on one big lift: shoulder press, deadlift, bench or squat. First come 3 heavy sets that follow a 4-week wave (sets of 5, then sets of 3, then a heavy week of 5, 3 and 1, then a light week), with as many good reps as you can on the last one. Then 5 sets of 10 on the same lift at a lighter weight for size, and a little assistance work. Weights come from a training max that goes up a small step after each wave you complete, so progress is slow and steady. The heavy sets build strength and the sets of 10 add the volume that builds muscle. It uses barbells; swap in a machine if a lift bothers a joint.',
   },
   {
     id: 'hybrid',
