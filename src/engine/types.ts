@@ -71,6 +71,7 @@ export type Mode = 'cut' | 'build';
 // What the block is for. Changes reps, rest, how close to failure, and
 // how many weekly sets the app aims for. See programs.ts.
 export type Goal = 'strength' | 'hypertrophy' | 'endurance';
+export type RestGroup = 'heavy' | 'compound' | 'isolation';
 
 export type Settings = {
   mode: Mode;
@@ -87,4 +88,6 @@ export type Settings = {
   daysPerWeek?: number; // how many days a week you plan to lift; missing means 5
   setupDone?: boolean; // finished the first-run setup; missing means not yet
   painCheck?: boolean; // ask for a 0-10 pain rating after each exercise; missing means on
+  rest?: Partial<Record<RestGroup, number>>; // your own rest in seconds per group; missing means the default
+  workoutView?: 'list' | 'focus'; // how the workout screen looks; missing means the list
 };

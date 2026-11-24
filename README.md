@@ -26,11 +26,11 @@ Everything is stored on the phone. Settings → Backup saves every workout and s
 - Name: **Every Set Counts: Lifting Plan**
 - Subtitle: **Miss a day, keep your progress**
 - Under the icon on the home screen: **Every Set** (`expo.name` in `app.json`), so it isn't cut off
-- Icon: the stacked wordmark "every / set✓ / counts" in Inter Black, "set" and the check in gold #C9A35C. Forest #26372E on cream #F3EFE6, cream on forest in dark mode, plus a tinted version (`assets/icon-*.png`, sources in `assets/source/`). The gold check alone (`mark-check`) is for tiny spots.
+- Icon: the stacked wordmark "every / set / counts" in Inter Black, with "set" and a dumbbell in gold #C9A35C. Forest #26372E on cream #F3EFE6, cream on forest in dark mode, plus a tinted version (`assets/icon-*.png`, sources in `assets/source/`). The splash screen uses the same image. The old gold check (`mark-check`) is no longer used in the app.
 
 ## Before the first build
 
-The app ID is `com.jdicesar.everysetcounts`. It can't change after the first TestFlight upload. Link a new Expo project with `npx eas-cli@27 init` and turn over-the-air updates back on with `npx eas-cli@27 update:configure`.
+The app ID is `com.jdicesar.everysetcounts`. It can't change after the first TestFlight upload. The Expo project is `@jdicesar24/every-set-counts` (its own project, separate from the personal app), and over-the-air updates are set up in `app.json`. Builds made on the Mac ask for the `production` channel too, so they get the same updates as TestFlight.
 
 ## Run it on your iPhone or iPad
 
@@ -41,7 +41,7 @@ npx expo run:ios --device
 
 ## Over-the-air updates
 
-Once the Expo project is linked (above):
+Only builds that were made after updates were set up (build 3 and later) can get them.
 
 ```bash
 git checkout main && git pull

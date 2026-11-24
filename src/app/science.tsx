@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { Badge, Card, Muted, styles, Title } from '../components/ui';
+import { Badge, Card, Muted, styles } from '../components/ui';
 import { daysFor, goalFor, goalInfo, programFor } from '../engine/programs';
 import { Settings } from '../engine/types';
-import { pubmedLink, pubmedSearch, REFERENCES, SCIENCE } from '../science';
+import { PMID_LABELS, pubmedLink, pubmedSearch, REFERENCES, SCIENCE } from '../science';
 import { loadSettings } from '../storage';
 import { colors } from '../theme';
 
@@ -30,20 +30,21 @@ export default function ScienceScreen() {
     }, [])
   );
 
+  // Draw once, after settings load, like the other pushed screens. Adding
+  // the block card a moment after the screen appeared made the header redraw.
+  if (!settings) return null;
+
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      <Title>Why this works</Title>
       <Muted style={{ marginBottom: 14 }}>What the plan is based on, how sure the research is, and the studies themselves.</Muted>
-      {settings && (
-        <Card style={{ backgroundColor: colors.accentSoft, borderColor: colors.accentSoft }}>
-          <Text style={[styles.h2, { marginBottom: 2 }]}>Your block: {programFor(settings).name}</Text>
-          <Muted style={{ marginBottom: 8 }}>
-            {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
-          </Muted>
-          <Text style={[styles.body, { marginBottom: 8 }]}>{programFor(settings).guidance}</Text>
-          <Text style={styles.body}>{goalInfo(goalFor(settings)).guidance}</Text>
-        </Card>
-      )}
+      <Card style={{ backgroundColor: colors.accentSoft, borderColor: colors.accentSoft }}>
+        <Text style={[styles.h2, { marginBottom: 2 }]}>Your block: {programFor(settings).name}</Text>
+        <Muted style={{ marginBottom: 8 }}>
+          {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
+        </Muted>
+        <Text style={[styles.body, { marginBottom: 8 }]}>{programFor(settings).guidance}</Text>
+        <Text style={styles.body}>{goalInfo(goalFor(settings)).guidance}</Text>
+      </Card>
       {SCIENCE.map((s) => (
         <Card key={s.title}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -51,7 +52,7 @@ export default function ScienceScreen() {
             <Badge label={s.strength} tone={s.strength === 'Emerging' ? 'warn' : 'gold'} />
           </View>
           <Text style={[styles.body, { marginBottom: s.pmids ? 8 : 0 }]}>{s.body}</Text>
-          {s.pmids?.map((id) => <Link key={id} label={`PubMed ${id}`} url={pubmedLink(id)} />)}
+          {s.pmids?.map((id) => <Link key={id} label={PMID_LABELS[id] ?? `PubMed ${id}`} url={pubmedLink(id)} />)}
         </Card>
       ))}
       <Text style={[styles.h2, { marginVertical: 8 }]}>References</Text>

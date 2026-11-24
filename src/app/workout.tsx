@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
+import FocusWorkout from '../components/FocusWorkout';
 import RestTimer, { Rest } from '../components/RestTimer';
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { alternativesFor, exercise, painAreasFor } from '../engine/exercises';
 import { goalFor, withGoalReps } from '../engine/programs';
 import { PlannedExercise } from '../engine/plan';
 import { suggest } from '../engine/progression';
-import { restReason, restSeconds } from '../engine/rest';
+import { estimateMinutes, restReason, restSeconds } from '../engine/rest';
 import { cancelRestAlert, scheduleRestAlert } from '../restAlert';
 import { LoggedExercise, LoggedSet, Session, Settings } from '../engine/types';
 import {
@@ -117,6 +118,12 @@ export default function WorkoutScreen() {
     return withGoalReps(id, goal);
   }
 
+  // Stuck lifts get an extra minute of rest (see stallCheck in plan.ts)
+  function isStalled(i: number, id: string) {
+    const p = active!.plan.exercises[i];
+    return !!p && p.exerciseId === id && !!p.suggestion.stalled;
+  }
+
   function changeExercise(i: number, change: (ex: LoggedExercise) => LoggedExercise) {
     setActive((a) => (a ? { ...a, exercises: a.exercises.map((ex, k) => (k === i ? change(ex) : ex)) } : a));
   }
@@ -125,9 +132,11 @@ export default function WorkoutScreen() {
     changeExercise(i, (ex) => ({ ...ex, sets: ex.sets.map((s, k) => (k === j ? { ...s, ...change } : s)) }));
   }
 
-  function toggleDone(i: number, j: number) {
+  // fill: values to save with the set as it's checked off (Focus mode
+  // passes the reps shown on screen)
+  function toggleDone(i: number, j: number, fill: Partial<LoggedSet> = {}) {
     const ex = active!.exercises[i];
-    const set = ex.sets[j];
+    const set = { ...ex.sets[j], ...fill };
     if (!set.done && (set.reps == null || set.weight == null)) {
       Alert.alert('Add weight and reps', 'Fill in the weight and reps before checking off the set.');
       return;
@@ -136,7 +145,7 @@ export default function WorkoutScreen() {
     changeExercise(i, (e) => ({
       ...e,
       sets: e.sets.map((s, k) => {
-        if (k === j) return { ...s, done: !s.done };
+        if (k === j) return { ...s, ...fill, done: !s.done };
         // Carry the weight to the next empty set
         if (k === j + 1 && !s.done && !set.done && s.weight == null) return { ...s, weight: set.weight };
         return s;
@@ -154,8 +163,9 @@ export default function WorkoutScreen() {
       stopRest();
       return;
     }
-    const seconds = restSeconds(e, set.rir, active!.deload, goal);
-    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, set.rir, active!.deload, goal) });
+    const stuck = isStalled(i, ex.exerciseId);
+    const seconds = restSeconds(e, set.rir, active!.deload, goal, stuck, settings!.rest);
+    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, set.rir, active!.deload, goal, stuck, settings!.rest) });
     scheduleRestAlert(seconds, next);
   }
 
@@ -182,8 +192,9 @@ export default function WorkoutScreen() {
       return;
     }
     const e = liftFor(i, ex.exerciseId);
-    const seconds = restSeconds(e, last.rir, active!.deload, goal);
-    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, last.rir, active!.deload, goal) });
+    const stuck = isStalled(i, ex.exerciseId);
+    const seconds = restSeconds(e, last.rir, active!.deload, goal, stuck, settings!.rest);
+    setRest({ endAt: Date.now() + seconds * 1000, total: seconds, reason: restReason(e, last.rir, active!.deload, goal, stuck, settings!.rest) });
     scheduleRestAlert(seconds, next);
   }
 
@@ -270,10 +281,68 @@ export default function WorkoutScreen() {
     ]);
   }
 
+  // About how long is left, from the sets not yet ticked off (see rest.ts)
+  function timeLeft() {
+    const items = active!.exercises.map((ex, i) => ({ exercise: liftFor(i, ex.exerciseId), sets: ex.sets.filter((x) => !x.done).length }));
+    if (items.every((x) => x.sets === 0)) return 'All sets done';
+    const minutes = estimateMinutes(items, active!.deload, goal, settings!.rest);
+    const started = active!.exercises.some((ex) => ex.sets.some((x) => x.done));
+    return started ? `About ${minutes} min left` : `About ${minutes} min, rest included`;
+  }
+
+  async function setView(workoutView: 'list' | 'focus') {
+    setSettings(await updateSettings({ workoutView }));
+  }
+
+  function leave() {
+    Alert.alert('Leave the workout?', 'Finish saves what you logged. Your sets are kept if you just close the app.', [
+      { text: 'Finish workout', onPress: finish },
+      { text: 'Discard workout', style: 'destructive', onPress: discard },
+      { text: 'Keep going', style: 'cancel' },
+    ]);
+  }
+
+  if (settings.workoutView === 'focus') {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <FocusWorkout
+          dayName={active.plan.day.name}
+          exercises={active.exercises}
+          planned={active.exercises.map((_, i) => active.plan.exercises[i])}
+          sessions={sessions}
+          settings={settings}
+          rest={rest}
+          timeLeft={timeLeft()}
+          liftFor={liftFor}
+          changeSet={changeSet}
+          completeSet={(i, j, fill) => toggleDone(i, j, fill)}
+          changeExercise={changeExercise}
+          painAreas={painAreasFor(active.dayId)}
+          changeRest={changeRest}
+          stopRest={stopRest}
+          swap={swap}
+          finish={finish}
+          leave={leave}
+          showList={() => setView('list')}
+        />
+      </>
+    );
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={90}>
       <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
-        <Text style={[styles.h2, { fontSize: 24, marginBottom: 12 }]}>{active.plan.day.name}</Text>
+        <Stack.Screen options={{ headerShown: true }} />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.h2, { fontSize: 24 }]}>{active.plan.day.name}</Text>
+            <Muted style={{ marginBottom: 12 }}>{timeLeft()}</Muted>
+          </View>
+          <Pressable onPress={() => setView('focus')} hitSlop={8} style={{ paddingTop: 6 }}>
+            <Text style={{ color: colors.accent, fontWeight: '700' }}>Focus mode ›</Text>
+          </Pressable>
+        </View>
         {active.exercises.map((ex, i) => {
           const e = liftFor(i, ex.exerciseId);
           const planned = active.plan.exercises[i];
