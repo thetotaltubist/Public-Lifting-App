@@ -5,6 +5,7 @@ import { suggest, Suggestion } from './progression';
 import { estimateMinutes } from './rest';
 import { DAY_MS, addCredit, creditFor, rollingVolume, targetFor } from './volume';
 import { DayTemplate, Goal, Muscle, Session, Settings } from './types';
+import { LIGHT_WEEK, PlannedSet, planWave } from './wave';
 
 // ------------------------------------------------------------------
 // Builds the next workout.
@@ -15,7 +16,8 @@ import { DayTemplate, Goal, Muscle, Session, Settings } from './types';
 //    how often that muscle comes up in a week: how many of the program's
 //    days train it, times the days a week you plan to lift. Plan 6 and
 //    lift 4, and the muscles that fell behind get catch-up sets.
-//    Fixed programs (5x5) keep their own sets and skip catch-up.
+//    Fixed programs (5x5, Strength + Size) keep their own sets and skip
+//    catch-up. Strength + Size main lifts follow a 4-week wave (wave.ts).
 // 3. If a muscle is behind (missed days), add catch-up sets: at most 3 per
 //    muscle per session, and never more than 10 for one muscle in a
 //    session. The rest carries to the next time that muscle comes up.
@@ -53,6 +55,9 @@ export type PlannedExercise = {
   repMax?: number;
   rirTarget: string;
   suggestion: Suggestion;
+  setPlan?: PlannedSet[]; // weight and reps for each set, when they differ (Strength + Size)
+  trainingMax?: number; // lb, Strength + Size main lifts
+  waveWeek?: number;
 };
 
 export type Plan = {
@@ -148,6 +153,8 @@ export type StallCheck = { kind: 'deload' | 'recovery'; title: string; text: str
 // protein) instead of a lighter week. See science.ts.
 export function stallCheck(sessions: Session[], settings: Settings, now: Date, health: HealthData | null = null): StallCheck | null {
   if (isDeload(settings, now)) return null;
+  // Strength + Size has its own light week every 4th time through
+  if (programFor(settings).days.some((id) => day(id).exercises.some((x) => x.wave))) return null;
   const week = blockWeek(settings, now);
   const lifts = stalledLifts(sessions, settings, now);
   if (week >= LONG_BLOCK_WEEK) {
@@ -210,7 +217,7 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
   const slots = template.exercises.map((x) => {
     const exerciseId = settings.swaps[x.exerciseId] ?? x.exerciseId;
     // A slot's own reps stay with its exercise, not a replacement for another muscle
-    return { templateExerciseId: x.exerciseId, exerciseId, baseSets: x.baseSets, reps: x.reps };
+    return { templateExerciseId: x.exerciseId, exerciseId, baseSets: x.baseSets, reps: x.reps, wave: x.wave };
   });
   const primaries = [...new Set(slots.map((s) => exercise(s.exerciseId).primary))];
 
@@ -266,7 +273,23 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
   const catchUpLeft: Partial<Record<Muscle, number>> = {};
   for (const m of primaries) catchUpLeft[m] = plannedFor[m]?.catchUp ?? 0;
 
-  const exercises: PlannedExercise[] = slots.map((s, i) => {
+  const planned: PlannedExercise[] = slots.map((s, i) => {
+    if (s.wave) {
+      const w = planWave(s.wave, s.exerciseId, template.id, all, settings, deload);
+      const reps = w.sets.map((x) => x.reps);
+      return {
+        exerciseId: s.exerciseId,
+        templateExerciseId: s.templateExerciseId,
+        sets: w.sets.length,
+        catchUpSets: 0,
+        repMin: Math.min(...reps, 99),
+        repMax: Math.max(...reps, 0),
+        rirTarget: w.week === LIGHT_WEEK ? '3-4' : s.wave === 'main' ? '1-2' : '2-3',
+        suggestion: { weight: w.sets[0]?.weight ?? null, targetReps: reps[0] ?? 0, why: w.why, swapSuggested: false, stalled: false },
+        setPlan: w.sets,
+        ...(s.wave === 'main' ? { trainingMax: w.trainingMax ?? undefined, waveWeek: w.week } : {}),
+      };
+    }
     const e = withGoalReps(s.exerciseId, goal, s.reps);
     const left = catchUpLeft[e.primary] ?? 0;
     const catchUpSets = Math.min(left, Math.max(0, sizes[i] - 1));
@@ -282,6 +305,8 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
       suggestion: suggest(s.exerciseId, all, { comeback, deload, goal, reps: s.reps }),
     };
   });
+  // The 5 sets of 10 drop out in the light week
+  const exercises = planned.filter((e) => e.sets > 0);
 
   const notes: string[] = [];
   if (deload) notes.push('Deload week: about half the sets, same weights, 3-4 reps in reserve.');

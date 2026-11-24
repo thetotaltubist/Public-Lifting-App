@@ -264,6 +264,52 @@ export const OTHER_DAYS: DayTemplate[] = [
     ],
   },
 
+  // Strength + Size: one main lift a day on a 4-week wave, then 5 sets of
+  // 10 on the same lift, then a little assistance work (see wave.ts)
+  {
+    id: 'ss-press',
+    name: 'Shoulder press day',
+    painAreas: UPPER,
+    exercises: [
+      { exerciseId: 'barbell-ohp', baseSets: 3, wave: 'main' },
+      { exerciseId: 'barbell-ohp', baseSets: 5, wave: 'volume' },
+      { exerciseId: 'lat-pulldown', baseSets: 4 },
+      { exerciseId: 'face-pull', baseSets: 3 },
+    ],
+  },
+  {
+    id: 'ss-deadlift',
+    name: 'Deadlift day',
+    painAreas: ALL,
+    exercises: [
+      { exerciseId: 'trap-bar-deadlift', baseSets: 3, wave: 'main' },
+      { exerciseId: 'trap-bar-deadlift', baseSets: 5, wave: 'volume' },
+      { exerciseId: 'cable-crunch', baseSets: 3 },
+    ],
+  },
+  {
+    id: 'ss-bench',
+    name: 'Bench day',
+    painAreas: UPPER,
+    exercises: [
+      { exerciseId: 'barbell-bench', baseSets: 3, wave: 'main' },
+      { exerciseId: 'barbell-bench', baseSets: 5, wave: 'volume' },
+      { exerciseId: 'chest-supported-row', baseSets: 4 },
+      { exerciseId: 'hammer-curl', baseSets: 3 },
+    ],
+  },
+  {
+    id: 'ss-squat',
+    name: 'Squat day',
+    painAreas: LOWER,
+    exercises: [
+      { exerciseId: 'barbell-squat', baseSets: 3, wave: 'main' },
+      { exerciseId: 'barbell-squat', baseSets: 5, wave: 'volume' },
+      { exerciseId: 'seated-leg-curl', baseSets: 3 },
+      { exerciseId: 'cable-crunch', baseSets: 3 },
+    ],
+  },
+
   // Upper / lower. Lower B adds lateral raises: one side-delt exercise per
   // upper day can't hold a full week of sets.
   {

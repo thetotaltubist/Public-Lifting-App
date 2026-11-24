@@ -90,6 +90,12 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
       'Double progression: keep the weight until every set hits the top of the rep range, then add weight and start at the bottom. In a cut, holding your weights is a win. The app flags a stall only after 3 sessions without progress.',
   },
   {
+    title: 'Heavy sets plus sets of 10 (Strength + Size)',
+    strength: 'Moderate',
+    body:
+      'Strength + Size pairs a few heavy sets with 5 sets of 10 on the same lift. Heavy sets build strength best, and the extra sets of 10 add the weekly volume that builds muscle. Both kinds of set build muscle about equally when they are hard. Changing the reps and weight from week to week (sets of 5, then 3, then 5, 3 and 1) works about as well as or a little better than keeping them the same. The last heavy set is as many good reps as you can, stopping 1 short of failure, which lets a good day count for more without grinding. Weights come from a training max of 90% of your estimated 1 rep max, and it goes up 5 lb (upper body) or 10 lb (lower body) only after a wave where the last sets made their reps, so the weights stay ones you can lift with good form. Every 4th week is light, so there is no separate deload.',
+  },
+  {
     title: 'Estimating your 1 rep max',
     strength: 'Moderate',
     body:

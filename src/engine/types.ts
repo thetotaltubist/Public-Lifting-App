@@ -34,7 +34,8 @@ export type DayTemplate = {
   id: string;
   name: string;
   // reps overrides the goal's rep range for this slot (5x5 is always 5)
-  exercises: { exerciseId: string; baseSets: number; reps?: [number, number] }[];
+  // wave: a main lift on the Strength + Size wave, or its 5 sets of 10 (see wave.ts)
+  exercises: { exerciseId: string; baseSets: number; reps?: [number, number]; wave?: 'main' | 'volume' }[];
   painAreas?: string[]; // body parts offered for a pain rating; missing uses the day id
 };
 
@@ -52,6 +53,8 @@ export type LoggedExercise = {
   pain?: number | null; // 0-10, joint or muscle pain during this exercise
   painArea?: string | null; // where it hurt, e.g. 'Shoulder'
   shoulderPain?: number | null; // older logs, before pain covered any joint or muscle
+  trainingMax?: number; // lb, Strength + Size main lifts only
+  waveWeek?: number; // 0-3, Strength + Size main lifts only
 };
 
 export type Session = {
