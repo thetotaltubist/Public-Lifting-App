@@ -1,5 +1,6 @@
 import { estimate1RM } from './oneRm';
-import { exercise } from './exercises';
+import { day, exercise } from './exercises';
+import { programFor } from './programs';
 import { roundTo } from './progression';
 import { Session, Settings } from './types';
 
@@ -18,9 +19,16 @@ import { Session, Settings } from './types';
 //
 // The week is counted from how many times you've done that day this
 // block, not the calendar, so a missed week never skips a step.
+//
+// 5/3/1 uses the same wave and training max. Its heavy sets are followed
+// by 5 sets of 5 at the first heavy set's weight instead of 5 sets of 10.
+//
+// You can type in a 1 rep max or a training max for each main lift
+// (Training maxes screen). That number is the start, and the wave
+// progresses from the sets you log after it.
 // ------------------------------------------------------------------
 
-export type WaveRole = 'main' | 'volume';
+export type WaveRole = 'main' | 'volume' | 'fsl';
 
 export type PlannedSet = { weight: number | null; reps: number; asMany?: boolean };
 
@@ -66,6 +74,31 @@ export const VOLUME_SETS = 5;
 export const VOLUME_REPS = 10;
 export const VOLUME_PERCENT = [0.5, 0.55, 0.6];
 
+// 5/3/1: 5 sets of 5 at the first heavy set's weight, skipped in the light week
+export const FSL_SETS = 5;
+export const FSL_REPS = 5;
+
+// A training max from a 1 rep max you typed in, rounded to 5 lb
+export function trainingMaxFrom1RM(oneRm: number) {
+  return roundTo(oneRm * TRAINING_MAX, 5);
+}
+
+// Every set of one 4-week cycle from a training max, for the cycle preview
+export function cycleFor(trainingMax: number, role: 'volume' | 'fsl') {
+  const at = (p: number) => roundTo(trainingMax * p, 5);
+  return WAVE.map((week, w) => ({
+    week: w,
+    name: WEEK_NAMES[w],
+    sets: week.map((s, i) => ({ weight: at(s.percent), reps: s.reps, asMany: w !== LIGHT_WEEK && i === 2 })) as PlannedSet[],
+    after:
+      w === LIGHT_WEEK
+        ? null
+        : role === 'fsl'
+          ? { sets: FSL_SETS, reps: FSL_REPS, weight: at(week[0].percent) }
+          : { sets: VOLUME_SETS, reps: VOLUME_REPS, weight: at(VOLUME_PERCENT[w]) },
+  }));
+}
+
 export function trainingMaxStep(exerciseId: string) {
   const m = exercise(exerciseId).primary;
   return m === 'quads' || m === 'hamstrings' || m === 'glutes' ? 10 : 5;
@@ -81,10 +114,12 @@ export function waveWeek(dayId: string, sessions: Session[], settings: Settings,
 
 type MainEntry = { trainingMax: number; week: number; sets: { weight: number; reps: number }[] };
 
-// Main-lift entries logged with a training max, newest first
-function mainHistory(exerciseId: string, sessions: Session[]): MainEntry[] {
+// Main-lift entries logged with a training max, newest first. Entries
+// from before a training max you typed in are left out.
+function mainHistory(exerciseId: string, sessions: Session[], since = ''): MainEntry[] {
   const out: (MainEntry & { date: string })[] = [];
   for (const s of sessions) {
+    if (s.finishedAt < since) continue;
     for (const ex of s.exercises) {
       if (ex.exerciseId !== exerciseId || ex.trainingMax == null || ex.waveWeek == null) continue;
       const sets = ex.sets.filter((x) => x.done && x.weight != null && (x.reps ?? 0) > 0) as { weight: number; reps: number }[];
@@ -122,10 +157,13 @@ function madeReps(entry: MainEntry) {
 export function trainingMaxFor(
   exerciseId: string,
   sessions: Session[],
-  week: number
+  week: number,
+  settings?: Settings
 ): { trainingMax: number | null; note: string } {
-  const history = mainHistory(exerciseId, sessions);
+  const typed = settings?.trainingMaxes?.[exerciseId];
+  const history = mainHistory(exerciseId, sessions, typed?.setAt);
   const step = trainingMaxStep(exerciseId);
+  if (!history.length && typed) return { trainingMax: typed.lb, note: `Training max ${typed.lb} lb, the one you entered.` };
   if (!history.length) {
     const best = recentBest(exerciseId, sessions);
     if (!best) return { trainingMax: null, note: '' };
@@ -150,7 +188,7 @@ export function trainingMaxFor(
 
 export function planWave(role: WaveRole, exerciseId: string, dayId: string, sessions: Session[], settings: Settings, deload: boolean): WavePlan {
   const week = waveWeek(dayId, sessions, settings, deload);
-  const { trainingMax, note } = trainingMaxFor(exerciseId, sessions, week);
+  const { trainingMax, note } = trainingMaxFor(exerciseId, sessions, week, settings);
   const at = (p: number) => (trainingMax == null ? null : roundTo(trainingMax * p, 5));
 
   if (role === 'volume') {
@@ -167,13 +205,27 @@ export function planWave(role: WaveRole, exerciseId: string, dayId: string, sess
     };
   }
 
+  if (role === 'fsl') {
+    if (week === LIGHT_WEEK) return { week, trainingMax, sets: [], why: '' };
+    const p = WAVE[week][0].percent;
+    return {
+      week,
+      trainingMax,
+      sets: Array.from({ length: FSL_SETS }, () => ({ weight: at(p), reps: FSL_REPS })),
+      why:
+        trainingMax == null
+          ? 'First time: 5 sets of 5 with the weight of your first heavy set.'
+          : `5 sets of 5 at the weight of your first heavy set (${Math.round(p * 100)}% of your training max). Steady, not hard.`,
+    };
+  }
+
   const sets = WAVE[week].map((s, i) => ({ weight: at(s.percent), reps: s.reps, asMany: week !== LIGHT_WEEK && i === 2 }));
   if (trainingMax == null) {
     return {
       week,
       trainingMax,
       sets,
-      why: 'First time: work up to a weight you could lift for about 5 reps with 1 or 2 left in the tank, and log your sets. The app sets your training max from it.',
+      why: 'First time: enter your training max or 1 rep max on the Training maxes screen, and the app works out every set. Or work up to a weight you could lift for about 5 reps with 1 or 2 left in the tank, and the app sets your training max from it.',
     };
   }
   const last = sets[2];
@@ -182,4 +234,16 @@ export function planWave(role: WaveRole, exerciseId: string, dayId: string, sess
       ? `Light week: 3 easy sets of 5 to recover before the next wave. ${note}`
       : `${WEEK_NAMES[week]}. Last set: as many good reps as you can, at least ${last.reps}, stopping 1 short of failure. ${note}`;
   return { week, trainingMax, sets, why };
+}
+
+// The main lifts of the current program that follow the wave, one per day,
+// with what follows them (5 sets of 10, or 5 sets of 5). Empty for other programs.
+export function waveLifts(settings: Settings): { dayId: string; exerciseId: string; after: 'volume' | 'fsl' }[] {
+  return programFor(settings).days.flatMap((id) => {
+    const d = day(id);
+    const main = d.exercises.find((x) => x.wave === 'main');
+    if (!main) return [];
+    const after = d.exercises.find((x) => x.wave === 'fsl') ? 'fsl' : 'volume';
+    return [{ dayId: id, exerciseId: settings.swaps[main.exerciseId] ?? main.exerciseId, after } as const];
+  });
 }

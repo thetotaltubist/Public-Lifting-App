@@ -96,6 +96,18 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
       'Strength + Size pairs a few heavy sets with 5 sets of 10 on the same lift. Heavy sets build strength best, and the extra sets of 10 add the weekly volume that builds muscle. Both kinds of set build muscle about equally when they are hard. Changing the reps and weight from week to week (sets of 5, then 3, then 5, 3 and 1) works about as well as or a little better than keeping them the same. The last heavy set is as many good reps as you can, stopping 1 short of failure, which lets a good day count for more without grinding. Weights come from a training max of 90% of your estimated 1 rep max, and it goes up 5 lb (upper body) or 10 lb (lower body) only after a wave where the last sets made their reps, so the weights stay ones you can lift with good form. Every 4th week is light, so there is no separate deload.',
   },
   {
+    title: '5/3/1 and your own training maxes',
+    strength: 'Moderate',
+    body:
+      '5/3/1 uses the same 4-week wave and training max as Strength + Size, but follows the heavy sets with 5 sets of 5 at the first heavy set\'s weight instead of 5 sets of 10. That is fewer weekly sets, which still builds strength well, since strength levels off with fewer sets than size does, so it suits a busy week or a cut. You can enter a 1 rep max or a training max for each lift. A typed 1 rep max becomes a training max of 90% of it, so the heavy sets start a little easy and the last set has room for extra reps. From then on the training max moves with the sets you log, the same way as Strength + Size.',
+  },
+  {
+    title: 'Warm-up sets',
+    strength: 'Moderate',
+    body:
+      'A few lighter sets of the lift you are about to do get the muscles and joints ready and tend to help the heavy sets go better, more than general warming up alone. A long or tiring warm-up can cost reps, so the sets build up quickly with fewer reps as the weight rises: the empty bar for 10, then about 40%, 60% and 80% of your first working weight for 5, 3 and 2. A second lift for a muscle that is already warm gets one set, and isolation work gets none. 5/3/1 and Strength + Size use the usual 40%, 50% and 60% of the training max. Warm-ups are too light to count as hard sets, so they are not logged and don\'t count toward your weekly sets. They are off unless you turn them on in Settings.',
+  },
+  {
     title: 'Estimating your 1 rep max',
     strength: 'Moderate',
     body:

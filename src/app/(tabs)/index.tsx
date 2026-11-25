@@ -7,7 +7,8 @@ import { day, exercise } from '../../engine/exercises';
 import { Plan, StallCheck, stallCheck, planMinutes, planNext, rotationFor } from '../../engine/plan';
 import { programFor } from '../../engine/programs';
 import { Session, Settings } from '../../engine/types';
-import { PlannedSet } from '../../engine/wave';
+import { PlannedSet, planWave, waveLifts } from '../../engine/wave';
+import { warmUpsForDay } from '../../engine/warmup';
 import { loadActive, loadSessions, loadSettings, saveActive, toDisplay, updateSettings } from '../../storage';
 import { loadHealth, refreshHealth } from '../../health';
 import { colors } from '../../theme';
@@ -97,6 +98,20 @@ export default function NextScreen() {
   const blockJustStarted = !plan.deload && !hasActive && !sessions.some((s) => s.finishedAt >= settings.blockStart);
   const totalSets = plan.exercises.reduce((t, e) => t + e.sets, 0);
 
+  // 5/3/1 and Strength + Size: ask for training maxes until every main lift has one
+  const lifts = waveLifts(settings);
+  const missingMax = lifts.some((l) => planWave('main', l.exerciseId, l.dayId, sessions, settings, false).trainingMax == null);
+  const warmUps = settings.warmUps
+    ? warmUpsForDay(
+        plan.exercises.map((e) => ({
+          exerciseId: e.exerciseId,
+          firstWeight: e.setPlan?.[0]?.weight ?? e.suggestion.weight,
+          trainingMax: e.trainingMax,
+          waveWeek: e.waveWeek,
+        }))
+      )
+    : [];
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <ScrollView contentContainerStyle={styles.screen}>
@@ -113,6 +128,21 @@ export default function NextScreen() {
             <Button title="Continue workout" onPress={() => router.push('/workout')} />
           </Card>
         )}
+
+        {lifts.length > 0 &&
+          (missingMax ? (
+            <Card style={{ borderWidth: 2, borderColor: colors.gold }}>
+              <Text style={styles.h2}>Set your training maxes</Text>
+              <Muted style={{ marginVertical: 8 }}>
+                Enter a 1 rep max or a training max for each main lift, and the app works out every set of the 4-week cycle.
+              </Muted>
+              <Button title="Enter training maxes" onPress={() => router.push('/training-max')} />
+            </Card>
+          ) : (
+            <Text style={{ color: colors.accent, fontWeight: '700', marginBottom: 14 }} onPress={() => router.push('/training-max')}>
+              Training maxes and full cycle ›
+            </Text>
+          ))}
 
         {blockJustStarted && (
           <Card>
@@ -168,6 +198,11 @@ export default function NextScreen() {
                   : `${e.sets} × ${reps(e.repMin ?? ex.repMin, e.repMax ?? ex.repMax)}${w != null ? ` @ ${toDisplay(w, settings.unit)} ${settings.unit}` : ''}`}{' '}
                 · {e.rirTarget} RIR
               </Text>
+              {(warmUps[i]?.length ?? 0) > 0 && (
+                <Muted style={{ marginTop: 4 }}>
+                  Warm-up: {warmUps[i].map((x) => `${toDisplay(x.weight, settings.unit)} × ${x.reps}`).join(', ')} {settings.unit}
+                </Muted>
+              )}
               <Muted style={{ marginTop: 4 }}>{e.suggestion.why}</Muted>
             </Card>
           );

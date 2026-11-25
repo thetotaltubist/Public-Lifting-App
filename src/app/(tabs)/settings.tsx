@@ -12,6 +12,7 @@ import { colors } from '../../theme';
 import { RestGroup, Settings } from '../../engine/types';
 import { loadSettings, updateSettings } from '../../storage';
 import { pickBackup, shareBackup } from '../../backup';
+import { waveLifts } from '../../engine/wave';
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -171,6 +172,18 @@ export default function SettingsScreen() {
         </Card>
 
         <Card>
+          <Text style={styles.h2}>Warm-up sets</Text>
+          <Muted style={{ marginVertical: 8 }}>
+            Show a few lighter sets before each big lift that build up to your working weight: the empty bar, then about 40%, 60% and 80% for 5,
+            3 and 2 reps. A second lift for the same muscle gets one set. They aren&apos;t logged and don&apos;t count toward your weekly sets.
+          </Muted>
+          <View style={{ flexDirection: 'row' }}>
+            <Chip label="On" selected={settings.warmUps === true} onPress={() => change({ warmUps: true })} />
+            <Chip label="Off" selected={settings.warmUps !== true} onPress={() => change({ warmUps: false })} />
+          </View>
+        </Card>
+
+        <Card>
           <Text style={styles.h2}>Training block</Text>
           <Text style={[styles.body, { marginTop: 8 }]}>
             {programFor(settings).name} · {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
@@ -185,6 +198,9 @@ export default function SettingsScreen() {
               <Button title="End deload now" kind="plain" onPress={() => change({ deloadStart: null, lastDeloadEnd: new Date().toISOString(), blockStart: new Date().toISOString() })} />
             ) : (
               <Button title="Start deload week" kind="plain" onPress={() => change({ deloadStart: new Date().toISOString() })} />
+            )}
+            {waveLifts(settings).length > 0 && (
+              <Button title="Training maxes and full cycle" kind="plain" onPress={() => router.push('/training-max')} />
             )}
             <Button title="Start a new block" kind="plain" onPress={() => router.push('/new-block')} />
           </View>

@@ -5,6 +5,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import FocusWorkout from '../components/FocusWorkout';
 import RestTimer, { Rest } from '../components/RestTimer';
+import WarmUps from '../components/WarmUps';
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { alternativesFor, exercise, painAreasFor } from '../engine/exercises';
 import { goalFor, withGoalReps } from '../engine/programs';
@@ -12,6 +13,7 @@ import { PlannedExercise } from '../engine/plan';
 import { suggest } from '../engine/progression';
 import { estimateMinutes, restReason, restSeconds } from '../engine/rest';
 import { cancelRestAlert, scheduleRestAlert } from '../restAlert';
+import { warmUpsForDay } from '../engine/warmup';
 import { LoggedExercise, LoggedSet, Session, Settings } from '../engine/types';
 import {
   ActiveWorkout,
@@ -126,6 +128,14 @@ export default function WorkoutScreen() {
 
   function changeExercise(i: number, change: (ex: LoggedExercise) => LoggedExercise) {
     setActive((a) => (a ? { ...a, exercises: a.exercises.map((ex, k) => (k === i ? change(ex) : ex)) } : a));
+  }
+
+  // Warm-up sets aren't logged, just checked off (see warmup.ts)
+  function toggleWarmUp(i: number, k: number) {
+    changeExercise(i, (ex) => {
+      const done = ex.warmUpsDone ?? [];
+      return { ...ex, warmUpsDone: done.includes(k) ? done.filter((x) => x !== k) : [...done, k] };
+    });
   }
 
   function changeSet(i: number, j: number, change: Partial<LoggedSet>) {
@@ -254,6 +264,7 @@ export default function WorkoutScreen() {
       // A skipped pain rating means no pain
       exercises: done.map((e) => ({
         ...e,
+        warmUpsDone: undefined,
         sets: e.sets.filter((s) => s.done),
         pain: e.pain ?? 0,
         painArea: e.pain ? (e.painArea ?? null) : null,
@@ -302,6 +313,19 @@ export default function WorkoutScreen() {
     ]);
   }
 
+  // Built from the first working weight as it stands, so a swap or a new
+  // weight updates them
+  const warmUps = settings.warmUps
+    ? warmUpsForDay(
+        active.exercises.map((ex) => ({
+          exerciseId: ex.exerciseId,
+          firstWeight: ex.sets[0]?.weight ?? null,
+          trainingMax: ex.trainingMax,
+          waveWeek: ex.waveWeek,
+        }))
+      )
+    : [];
+
   if (settings.workoutView === 'focus') {
     return (
       <>
@@ -318,6 +342,8 @@ export default function WorkoutScreen() {
           changeSet={changeSet}
           completeSet={(i, j, fill) => toggleDone(i, j, fill)}
           changeExercise={changeExercise}
+          warmUps={warmUps}
+          toggleWarmUp={toggleWarmUp}
           painAreas={painAreasFor(active.dayId)}
           changeRest={changeRest}
           stopRest={stopRest}
@@ -370,6 +396,7 @@ export default function WorkoutScreen() {
                 )}
               </View>
               {e.tip && <Muted style={{ marginBottom: 10, fontStyle: 'italic' }}>{e.tip}</Muted>}
+              <WarmUps sets={warmUps[i] ?? []} done={ex.warmUpsDone ?? []} unit={unit} onToggle={(k) => toggleWarmUp(i, k)} />
 
               <View style={{ flexDirection: 'row', marginBottom: 6 }}>
                 <Text style={[headerText, { width: 26 }]}>Set</Text>

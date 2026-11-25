@@ -44,8 +44,8 @@ export default function ProgramScreen() {
         return (
           <Card key={d.id}>
             <Text style={[styles.h2, { marginBottom: 6 }]}>{d.name}</Text>
-            {/* The 5 sets of 10 follow their main lift, so they're replaced with it */}
-            {d.exercises.filter((x) => x.wave !== 'volume').map((x) => {
+            {/* The 5 sets of 10 (or 5 sets of 5) follow their main lift, so they're replaced with it */}
+            {d.exercises.filter((x) => x.wave !== 'volume' && x.wave !== 'fsl').map((x) => {
               const slot = x.exerciseId;
               const current = exercise(settings.swaps[slot] ?? slot);
               const swapped = settings.swaps[slot] != null;
@@ -61,7 +61,11 @@ export default function ProgramScreen() {
                       <Text style={styles.body}>{current.name}</Text>
                       <Muted>
                         {MUSCLE_NAMES[current.primary]}
-                        {x.wave === 'main' ? ' · heavy sets, then 5 sets of 10' : ''}
+                        {x.wave === 'main'
+                          ? d.exercises.some((y) => y.wave === 'fsl')
+                            ? ' · heavy sets, then 5 sets of 5'
+                            : ' · heavy sets, then 5 sets of 10'
+                          : ''}
                         {swapped ? ` · replaces ${exercise(slot).name}` : ''}
                       </Muted>
                     </View>

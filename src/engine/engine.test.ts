@@ -12,6 +12,8 @@ import { estimateMinutes, formatClock, restSeconds } from './rest';
 import { HealthData, proteinTarget, shortNightStreak, weightTrend } from './health';
 import { backupFileName, makeBackup, readBackup } from './backup';
 import { Session, Settings } from './types';
+import { cycleFor, trainingMaxFrom1RM } from './wave';
+import { warmUpSets } from './warmup';
 
 const DAY = 24 * 60 * 60 * 1000;
 const start = new Date('2026-11-01T17:00:00Z');
@@ -609,4 +611,129 @@ test('Strength + Size asks for a starting weight the first time', () => {
   assert.equal(main.suggestion.weight, null);
   assert.equal(main.trainingMax, undefined);
   assert.ok(main.suggestion.why.startsWith('First time'));
+});
+
+// ---------- 5/3/1: your own maxes, the whole cycle ----------
+
+test('5/3/1 starts from the training max you enter and works out the whole cycle', () => {
+  const tm = trainingMaxFrom1RM(300); // 270
+  assert.equal(tm, 270);
+  const s: Settings = {
+    ...withProgram('five-three-one', 'strength', 4),
+    trainingMaxes: { 'barbell-squat': { lb: tm, setAt: at(-1).toISOString() } },
+  };
+  // An older squat logged with a different training max is ignored
+  const old: Session = {
+    id: 'old',
+    dayId: 'f31-squat',
+    startedAt: at(-5).toISOString(),
+    finishedAt: at(-5).toISOString(),
+    exercises: [{ exerciseId: 'barbell-squat', trainingMax: 400, waveWeek: 0, sets: [{ weight: 340, reps: 5, rir: 1, done: true }] }],
+  };
+  const plan = planNext([old], { ...s, nextDayOverride: 'f31-squat', blockStart: at(0).toISOString() }, at(0));
+  const main = plan.exercises[0];
+  assert.equal(main.trainingMax, 270);
+  assert.equal(main.waveWeek, 0);
+  assert.deepEqual(main.setPlan!.map((x) => x.weight), [175, 205, 230]);
+  assert.deepEqual(main.setPlan!.map((x) => x.reps), [5, 5, 5]);
+  assert.ok(main.setPlan![2].asMany);
+  // Then 5 sets of 5 at the first set's weight
+  const fsl = plan.exercises[1];
+  assert.equal(fsl.exerciseId, 'barbell-squat');
+  assert.deepEqual(fsl.setPlan, Array.from({ length: 5 }, () => ({ weight: 175, reps: 5 })));
+  for (const e of plan.exercises) assert.equal(e.catchUpSets, 0);
+
+  // The full cycle preview: 5s, 3s, 5/3/1, light week
+  const cycle = cycleFor(270, 'fsl');
+  assert.deepEqual(cycle.map((w) => w.sets.map((x) => x.weight)), [
+    [175, 205, 230],
+    [190, 215, 245],
+    [205, 230, 255],
+    [110, 135, 160],
+  ]);
+  assert.deepEqual(cycle.map((w) => w.sets.map((x) => x.reps)), [[5, 5, 5], [3, 3, 3], [5, 3, 1], [5, 5, 5]]);
+  assert.equal(cycle[3].after, null);
+  assert.deepEqual(cycle[1].after, { sets: 5, reps: 5, weight: 190 });
+});
+
+test('5/3/1 runs all 4 weeks and drops the 5 sets of 5 in the light week', () => {
+  const s: Settings = {
+    ...withProgram('five-three-one', 'strength', 4),
+    trainingMaxes: { 'barbell-bench': { lb: 200, setAt: at(-1).toISOString() } },
+  };
+  let sessions: Session[] = [];
+  const weeks: number[] = [];
+  const tms: number[] = [];
+  for (let d = 0; d < 40; d += 2) {
+    const plan = planNext(sessions, s, at(d));
+    assert.ok(plan.day.id.startsWith('f31-'));
+    if (plan.day.id === 'f31-bench') {
+      weeks.push(plan.exercises[0].waveWeek!);
+      tms.push(plan.exercises[0].trainingMax!);
+      const bench = plan.exercises.filter((e) => e.exerciseId === 'barbell-bench');
+      assert.equal(bench.length, plan.exercises[0].waveWeek === 3 ? 1 : 2);
+    }
+    sessions = [
+      ...sessions,
+      {
+        id: `f${d}`,
+        dayId: plan.day.id,
+        startedAt: at(d).toISOString(),
+        finishedAt: at(d).toISOString(),
+        exercises: plan.exercises.map((e) => ({
+          exerciseId: e.exerciseId,
+          ...(e.waveWeek != null ? { trainingMax: e.trainingMax, waveWeek: e.waveWeek } : {}),
+          sets: (e.setPlan ?? Array.from({ length: e.sets }, () => ({ weight: 100, reps: 10 }))).map((x) => ({
+            weight: x.weight ?? 100,
+            reps: x.reps + ('asMany' in x && x.asMany ? 2 : 0),
+            rir: 1,
+            done: true,
+          })),
+        })),
+      },
+    ];
+  }
+  assert.deepEqual(weeks, [0, 1, 2, 3, 0]);
+  // From the number you entered, then up 5 lb after a made cycle
+  assert.deepEqual(tms, [200, 200, 200, 200, 205]);
+});
+
+// ---------- Warm-up sets ----------
+
+test('warm-ups ramp up to the first working set and skip what is already warm', () => {
+  // First big lift of the day: bar, then about 40/60/80%
+  assert.deepEqual(warmUpSets({ exerciseId: 'barbell-bench', firstWeight: 225, earlier: [] }), [
+    { weight: 45, reps: 10 },
+    { weight: 90, reps: 5 },
+    { weight: 135, reps: 3 },
+    { weight: 180, reps: 2 },
+  ]);
+  // A light working weight drops sets that would be under the bar or too close
+  assert.deepEqual(warmUpSets({ exerciseId: 'barbell-ohp', firstWeight: 65, earlier: [] }), [{ weight: 45, reps: 10 }]);
+  // A second chest press gets one set
+  assert.deepEqual(warmUpSets({ exerciseId: 'db-incline-press', firstWeight: 60, earlier: ['barbell-bench'] }), [{ weight: 35, reps: 5 }]);
+  // The same lift again, isolation work, assisted lifts and unknown weights get none
+  assert.deepEqual(warmUpSets({ exerciseId: 'barbell-bench', firstWeight: 135, earlier: ['barbell-bench'] }), []);
+  assert.deepEqual(warmUpSets({ exerciseId: 'cable-fly', firstWeight: 40, earlier: [] }), []);
+  assert.deepEqual(warmUpSets({ exerciseId: 'assisted-pullup', firstWeight: 60, earlier: [] }), []);
+  assert.deepEqual(warmUpSets({ exerciseId: 'barbell-squat', firstWeight: null, earlier: [] }), []);
+  // Machines have no bar
+  assert.deepEqual(warmUpSets({ exerciseId: 'lat-pulldown', firstWeight: 150, earlier: [] }), [
+    { weight: 60, reps: 5 },
+    { weight: 90, reps: 3 },
+    { weight: 120, reps: 2 },
+  ]);
+});
+
+test('wave lifts warm up with 40, 50 and 60% of the training max', () => {
+  assert.deepEqual(warmUpSets({ exerciseId: 'barbell-squat', firstWeight: 175, earlier: [], trainingMax: 270, waveWeek: 0 }), [
+    { weight: 45, reps: 10 },
+    { weight: 110, reps: 5 },
+    { weight: 135, reps: 5 },
+    { weight: 160, reps: 3 },
+  ]);
+  // The light week starts at 40% already, so just the bar
+  assert.deepEqual(warmUpSets({ exerciseId: 'barbell-squat', firstWeight: 110, earlier: [], trainingMax: 270, waveWeek: 3 }), [
+    { weight: 45, reps: 10 },
+  ]);
 });
