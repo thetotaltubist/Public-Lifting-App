@@ -98,7 +98,7 @@ export default function NextScreen() {
   const blockJustStarted = !plan.deload && !hasActive && !sessions.some((s) => s.finishedAt >= settings.blockStart);
   const totalSets = plan.exercises.reduce((t, e) => t + e.sets, 0);
 
-  // 5/3/1 and Strength + Size: ask for training maxes until every main lift has one
+  // Strength Waves and Strength + Size: ask for training maxes until every main lift has one
   const lifts = waveLifts(settings);
   const missingMax = lifts.some((l) => planWave('main', l.exerciseId, l.dayId, sessions, settings, false).trainingMax == null);
   const warmUps = settings.warmUps

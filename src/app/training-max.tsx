@@ -10,7 +10,7 @@ import { fromDisplay, loadSessions, loadSettings, toDisplay, updateSettings } fr
 import { colors } from '../theme';
 
 // ------------------------------------------------------------------
-// Training maxes for the wave programs (5/3/1, Strength + Size). Type a
+// Training maxes for the wave programs (Strength Waves, Strength + Size). Type a
 // 1 rep max or a training max for each main lift, and see every set of
 // the 4-week cycle worked out from it. Leave a lift blank to keep the
 // training max it has now.
@@ -150,7 +150,7 @@ export default function TrainingMaxScreen() {
 
       {lifts.length === 0 && (
         <Card>
-          <Muted>Training maxes are for 5/3/1 and Strength + Size. Pick one of them when you start a new block.</Muted>
+          <Muted>Training maxes are for Strength Waves and Strength + Size. Pick one of them when you start a new block.</Muted>
         </Card>
       )}
 

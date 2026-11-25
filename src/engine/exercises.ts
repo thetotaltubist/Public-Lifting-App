@@ -310,10 +310,10 @@ export const OTHER_DAYS: DayTemplate[] = [
     ],
   },
 
-  // 5/3/1: the same 4-week wave on one main lift a day, then 5 sets of 5
+  // Strength Waves: the same 4-week wave on one main lift a day, then 5 sets of 5
   // at the first heavy set's weight, then a little assistance work
   {
-    id: 'f31-press',
+    id: 'sw-press',
     name: 'Shoulder press day',
     painAreas: UPPER,
     exercises: [
@@ -324,7 +324,7 @@ export const OTHER_DAYS: DayTemplate[] = [
     ],
   },
   {
-    id: 'f31-deadlift',
+    id: 'sw-deadlift',
     name: 'Deadlift day',
     painAreas: ALL,
     exercises: [
@@ -334,7 +334,7 @@ export const OTHER_DAYS: DayTemplate[] = [
     ],
   },
   {
-    id: 'f31-bench',
+    id: 'sw-bench',
     name: 'Bench day',
     painAreas: UPPER,
     exercises: [
@@ -345,7 +345,7 @@ export const OTHER_DAYS: DayTemplate[] = [
     ],
   },
   {
-    id: 'f31-squat',
+    id: 'sw-squat',
     name: 'Squat day',
     painAreas: LOWER,
     exercises: [

@@ -66,7 +66,7 @@ export default function NewBlockScreen() {
       deloadStart: null,
       ...(first ? { mode, unit, painCheck, setupDone: true } : {}),
     });
-    // A wave program (5/3/1, Strength + Size) asks for training maxes next.
+    // A wave program (Strength Waves, Strength + Size) asks for training maxes next.
     // The first time, the home screen asks instead.
     const chosen = PROGRAMS.find((p) => p.id === (picked ?? fits[0].program.id));
     const waves = !!chosen?.days.some((id) => day(id).exercises.some((x) => x.wave === 'main'));

@@ -16,7 +16,7 @@ import { LIGHT_WEEK, PlannedSet } from './wave';
 //   about 60% for 5.
 // - The same lift again (the 5 sets of 10 after the heavy sets) and
 //   isolation work get none.
-// - Wave lifts (Strength + Size, 5/3/1) use the usual 40%, 50% and 60% of
+// - Wave lifts (Strength + Size, Strength Waves) use the usual 40%, 50% and 60% of
 //   the training max for 5, 5 and 3. The light week just gets the bar.
 // - No working weight yet (first time) means no warm-up sets: pick your
 //   weight first.

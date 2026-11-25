@@ -35,7 +35,7 @@ export type DayTemplate = {
   name: string;
   // reps overrides the goal's rep range for this slot (5x5 is always 5)
   // wave: a main lift on the 4-week wave, or the lighter sets that follow it on the same lift:
-  // 5 sets of 10 (Strength + Size) or 5 sets of 5 at the first set's weight (5/3/1). See wave.ts.
+  // 5 sets of 10 (Strength + Size) or 5 sets of 5 at the first set's weight (Strength Waves). See wave.ts.
   exercises: { exerciseId: string; baseSets: number; reps?: [number, number]; wave?: 'main' | 'volume' | 'fsl' }[];
   painAreas?: string[]; // body parts offered for a pain rating; missing uses the day id
 };
@@ -54,7 +54,7 @@ export type LoggedExercise = {
   pain?: number | null; // 0-10, joint or muscle pain during this exercise
   painArea?: string | null; // where it hurt, e.g. 'Shoulder'
   shoulderPain?: number | null; // older logs, before pain covered any joint or muscle
-  trainingMax?: number; // lb, wave main lifts only (Strength + Size, 5/3/1)
+  trainingMax?: number; // lb, wave main lifts only (Strength + Size, Strength Waves)
   waveWeek?: number; // 0-3, wave main lifts only
   warmUpsDone?: number[]; // warm-up sets checked off during the workout, by index; not saved with the session
 };

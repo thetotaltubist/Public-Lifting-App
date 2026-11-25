@@ -613,24 +613,24 @@ test('Strength + Size asks for a starting weight the first time', () => {
   assert.ok(main.suggestion.why.startsWith('First time'));
 });
 
-// ---------- 5/3/1: your own maxes, the whole cycle ----------
+// ---------- Strength Waves: your own maxes, the whole cycle ----------
 
-test('5/3/1 starts from the training max you enter and works out the whole cycle', () => {
+test('Strength Waves starts from the training max you enter and works out the whole cycle', () => {
   const tm = trainingMaxFrom1RM(300); // 270
   assert.equal(tm, 270);
   const s: Settings = {
-    ...withProgram('five-three-one', 'strength', 4),
+    ...withProgram('strength-waves', 'strength', 4),
     trainingMaxes: { 'barbell-squat': { lb: tm, setAt: at(-1).toISOString() } },
   };
   // An older squat logged with a different training max is ignored
   const old: Session = {
     id: 'old',
-    dayId: 'f31-squat',
+    dayId: 'sw-squat',
     startedAt: at(-5).toISOString(),
     finishedAt: at(-5).toISOString(),
     exercises: [{ exerciseId: 'barbell-squat', trainingMax: 400, waveWeek: 0, sets: [{ weight: 340, reps: 5, rir: 1, done: true }] }],
   };
-  const plan = planNext([old], { ...s, nextDayOverride: 'f31-squat', blockStart: at(0).toISOString() }, at(0));
+  const plan = planNext([old], { ...s, nextDayOverride: 'sw-squat', blockStart: at(0).toISOString() }, at(0));
   const main = plan.exercises[0];
   assert.equal(main.trainingMax, 270);
   assert.equal(main.waveWeek, 0);
@@ -643,7 +643,7 @@ test('5/3/1 starts from the training max you enter and works out the whole cycle
   assert.deepEqual(fsl.setPlan, Array.from({ length: 5 }, () => ({ weight: 175, reps: 5 })));
   for (const e of plan.exercises) assert.equal(e.catchUpSets, 0);
 
-  // The full cycle preview: 5s, 3s, 5/3/1, light week
+  // The full cycle preview: 5s, 3s, then 5, 3 and 1, then a light week
   const cycle = cycleFor(270, 'fsl');
   assert.deepEqual(cycle.map((w) => w.sets.map((x) => x.weight)), [
     [175, 205, 230],
@@ -656,9 +656,9 @@ test('5/3/1 starts from the training max you enter and works out the whole cycle
   assert.deepEqual(cycle[1].after, { sets: 5, reps: 5, weight: 190 });
 });
 
-test('5/3/1 runs all 4 weeks and drops the 5 sets of 5 in the light week', () => {
+test('Strength Waves runs all 4 weeks and drops the 5 sets of 5 in the light week', () => {
   const s: Settings = {
-    ...withProgram('five-three-one', 'strength', 4),
+    ...withProgram('strength-waves', 'strength', 4),
     trainingMaxes: { 'barbell-bench': { lb: 200, setAt: at(-1).toISOString() } },
   };
   let sessions: Session[] = [];
@@ -666,8 +666,8 @@ test('5/3/1 runs all 4 weeks and drops the 5 sets of 5 in the light week', () =>
   const tms: number[] = [];
   for (let d = 0; d < 40; d += 2) {
     const plan = planNext(sessions, s, at(d));
-    assert.ok(plan.day.id.startsWith('f31-'));
-    if (plan.day.id === 'f31-bench') {
+    assert.ok(plan.day.id.startsWith('sw-'));
+    if (plan.day.id === 'sw-bench') {
       weeks.push(plan.exercises[0].waveWeek!);
       tms.push(plan.exercises[0].trainingMax!);
       const bench = plan.exercises.filter((e) => e.exerciseId === 'barbell-bench');

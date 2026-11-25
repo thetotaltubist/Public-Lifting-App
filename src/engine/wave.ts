@@ -20,7 +20,7 @@ import { Session, Settings } from './types';
 // The week is counted from how many times you've done that day this
 // block, not the calendar, so a missed week never skips a step.
 //
-// 5/3/1 uses the same wave and training max. Its heavy sets are followed
+// Strength Waves uses the same wave and training max. Its heavy sets are followed
 // by 5 sets of 5 at the first heavy set's weight instead of 5 sets of 10.
 //
 // You can type in a 1 rep max or a training max for each main lift
@@ -74,7 +74,7 @@ export const VOLUME_SETS = 5;
 export const VOLUME_REPS = 10;
 export const VOLUME_PERCENT = [0.5, 0.55, 0.6];
 
-// 5/3/1: 5 sets of 5 at the first heavy set's weight, skipped in the light week
+// Strength Waves: 5 sets of 5 at the first heavy set's weight, skipped in the light week
 export const FSL_SETS = 5;
 export const FSL_REPS = 5;
 
