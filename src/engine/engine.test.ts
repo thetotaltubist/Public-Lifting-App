@@ -737,3 +737,44 @@ test('wave lifts warm up with 40, 50 and 60% of the training max', () => {
     { weight: 45, reps: 10 },
   ]);
 });
+
+test('Strength Waves can pair each main lift with 5 sets of 10 of its partner lift', () => {
+  const setAt = at(-1).toISOString();
+  const s: Settings = {
+    ...withProgram('strength-waves', 'strength', 4),
+    programVariant: 'paired',
+    trainingMaxes: { 'barbell-ohp': { lb: 100, setAt }, 'barbell-bench': { lb: 200, setAt } },
+  };
+  const press = planNext([], { ...s, nextDayOverride: 'swp-press' }, at(0));
+  assert.equal(press.day.id, 'swp-press');
+  assert.equal(press.exercises[0].trainingMax, 100);
+  // Bench 5 x 10 at 50% of the bench training max in week 1
+  const bench = press.exercises[1];
+  assert.equal(bench.exerciseId, 'barbell-bench');
+  assert.deepEqual(bench.setPlan, Array.from({ length: 5 }, () => ({ weight: 100, reps: 10 })));
+  assert.equal(bench.trainingMax, undefined);
+  // Pulldowns 5 x 10
+  assert.equal(press.exercises[2].sets, 5);
+  assert.equal(press.exercises[2].repMin, 10);
+  // A partner lift with no training max yet asks for a weight
+  const dead = planNext([], { ...s, nextDayOverride: 'swp-deadlift' }, at(0)).exercises[1];
+  assert.equal(dead.exerciseId, 'barbell-squat');
+  assert.equal(dead.suggestion.weight, null);
+  // The cycle preview uses the partner's training max, and skips the light week
+  const cycle = cycleFor(100, 'paired', 200);
+  assert.deepEqual(cycle.map((w) => w.after?.weight ?? null), [100, 110, 120, null]);
+  // The default is still 5 x 5 of the same lift
+  const plain = planNext([], { ...s, programVariant: undefined, nextDayOverride: 'sw-press' }, at(0));
+  assert.equal(plain.exercises[1].exerciseId, 'barbell-ohp');
+  // Logging the bench 5 x 10 doesn't move the bench training max
+  const logged: Session = {
+    id: 'p1',
+    dayId: 'swp-press',
+    startedAt: at(0).toISOString(),
+    finishedAt: at(0).toISOString(),
+    exercises: [{ exerciseId: 'barbell-bench', sets: [{ weight: 100, reps: 10, rir: 3, done: true }] }],
+  };
+  const benchDay = planNext([logged], { ...s, nextDayOverride: 'swp-bench' }, at(2));
+  assert.equal(benchDay.exercises[0].trainingMax, 200);
+  assert.equal(benchDay.exercises[1].exerciseId, 'barbell-ohp');
+});

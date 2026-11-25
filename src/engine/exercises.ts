@@ -356,6 +356,50 @@ export const OTHER_DAYS: DayTemplate[] = [
     ],
   },
 
+  // Strength Waves with 5 sets of 10 of a partner lift: bench after press,
+  // squat after deadlift, and the other way round, then 5 sets of 10
+  // pulldowns or 5 sets of abs
+  {
+    id: 'swp-press',
+    name: 'Shoulder press day',
+    painAreas: UPPER,
+    exercises: [
+      { exerciseId: 'barbell-ohp', baseSets: 3, wave: 'main' },
+      { exerciseId: 'barbell-bench', baseSets: 5, wave: 'paired' },
+      { exerciseId: 'lat-pulldown', baseSets: 5, reps: [10, 10] },
+    ],
+  },
+  {
+    id: 'swp-deadlift',
+    name: 'Deadlift day',
+    painAreas: ALL,
+    exercises: [
+      { exerciseId: 'trap-bar-deadlift', baseSets: 3, wave: 'main' },
+      { exerciseId: 'barbell-squat', baseSets: 5, wave: 'paired' },
+      { exerciseId: 'cable-crunch', baseSets: 5 },
+    ],
+  },
+  {
+    id: 'swp-bench',
+    name: 'Bench day',
+    painAreas: UPPER,
+    exercises: [
+      { exerciseId: 'barbell-bench', baseSets: 3, wave: 'main' },
+      { exerciseId: 'barbell-ohp', baseSets: 5, wave: 'paired' },
+      { exerciseId: 'lat-pulldown', baseSets: 5, reps: [10, 10] },
+    ],
+  },
+  {
+    id: 'swp-squat',
+    name: 'Squat day',
+    painAreas: LOWER,
+    exercises: [
+      { exerciseId: 'barbell-squat', baseSets: 3, wave: 'main' },
+      { exerciseId: 'trap-bar-deadlift', baseSets: 5, wave: 'paired' },
+      { exerciseId: 'cable-crunch', baseSets: 5 },
+    ],
+  },
+
   // Upper / lower. Lower B adds lateral raises: one side-delt exercise per
   // upper day can't hold a full week of sets.
   {

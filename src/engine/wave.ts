@@ -23,12 +23,16 @@ import { Session, Settings } from './types';
 // Strength Waves uses the same wave and training max. Its heavy sets are followed
 // by 5 sets of 5 at the first heavy set's weight instead of 5 sets of 10.
 //
+// Strength Waves can instead follow the heavy sets with 5 sets of 10 of a
+// partner lift (bench after press, squat after deadlift, and back), at
+// 50-60% of that lift's own training max, the same as Strength + Size.
+//
 // You can type in a 1 rep max or a training max for each main lift
 // (Training maxes screen). That number is the start, and the wave
 // progresses from the sets you log after it.
 // ------------------------------------------------------------------
 
-export type WaveRole = 'main' | 'volume' | 'fsl';
+export type WaveRole = 'main' | 'volume' | 'fsl' | 'paired';
 
 export type PlannedSet = { weight: number | null; reps: number; asMany?: boolean };
 
@@ -84,7 +88,8 @@ export function trainingMaxFrom1RM(oneRm: number) {
 }
 
 // Every set of one 4-week cycle from a training max, for the cycle preview
-export function cycleFor(trainingMax: number, role: 'volume' | 'fsl') {
+// paired: the partner lift's training max, when it has one
+export function cycleFor(trainingMax: number, role: 'volume' | 'fsl' | 'paired', pairedMax: number | null = null) {
   const at = (p: number) => roundTo(trainingMax * p, 5);
   return WAVE.map((week, w) => ({
     week: w,
@@ -94,8 +99,10 @@ export function cycleFor(trainingMax: number, role: 'volume' | 'fsl') {
       w === LIGHT_WEEK
         ? null
         : role === 'fsl'
-          ? { sets: FSL_SETS, reps: FSL_REPS, weight: at(week[0].percent) }
-          : { sets: VOLUME_SETS, reps: VOLUME_REPS, weight: at(VOLUME_PERCENT[w]) },
+          ? { sets: FSL_SETS, reps: FSL_REPS, weight: at(week[0].percent) as number | null }
+          : role === 'paired'
+            ? { sets: VOLUME_SETS, reps: VOLUME_REPS, weight: pairedMax == null ? null : roundTo(pairedMax * VOLUME_PERCENT[w], 5) }
+            : { sets: VOLUME_SETS, reps: VOLUME_REPS, weight: at(VOLUME_PERCENT[w]) as number | null },
   }));
 }
 
@@ -188,6 +195,22 @@ export function trainingMaxFor(
 
 export function planWave(role: WaveRole, exerciseId: string, dayId: string, sessions: Session[], settings: Settings, deload: boolean): WavePlan {
   const week = waveWeek(dayId, sessions, settings, deload);
+  if (role === 'paired') {
+    // 5 sets of 10 of a partner lift, from that lift's own training max
+    if (week === LIGHT_WEEK) return { week, trainingMax: null, sets: [], why: '' };
+    const { trainingMax } = trainingMaxFor(exerciseId, sessions, 1, settings);
+    const p = VOLUME_PERCENT[week];
+    const weight = trainingMax == null ? null : roundTo(trainingMax * p, 5);
+    return {
+      week,
+      trainingMax: null,
+      sets: Array.from({ length: VOLUME_SETS }, () => ({ weight, reps: VOLUME_REPS })),
+      why:
+        trainingMax == null
+          ? 'First time: pick a weight you could lift for about 15 reps, and do 5 sets of 10 with it. Or enter this lift\'s training max and the app works it out.'
+          : `5 sets of 10 at ${Math.round(p * 100)}% of this lift\'s training max. These should feel steady, not hard. Keep the rest short if you can.`,
+    };
+  }
   const { trainingMax, note } = trainingMaxFor(exerciseId, sessions, week, settings);
   const at = (p: number) => (trainingMax == null ? null : roundTo(trainingMax * p, 5));
 
@@ -237,13 +260,19 @@ export function planWave(role: WaveRole, exerciseId: string, dayId: string, sess
 }
 
 // The main lifts of the current program that follow the wave, one per day,
-// with what follows them (5 sets of 10, or 5 sets of 5). Empty for other programs.
-export function waveLifts(settings: Settings): { dayId: string; exerciseId: string; after: 'volume' | 'fsl' }[] {
-  return programFor(settings).days.flatMap((id) => {
+// with what follows them (5 sets of 10, 5 sets of 5, or a partner lift's
+// 5 sets of 10). Empty for other programs.
+export type WaveLift = { dayId: string; exerciseId: string; after: 'volume' | 'fsl' | 'paired'; pairedId?: string };
+
+export function waveLifts(settings: Settings): WaveLift[] {
+  const swap = (id: string) => settings.swaps[id] ?? id;
+  return programFor(settings).days.flatMap((id): WaveLift[] => {
     const d = day(id);
     const main = d.exercises.find((x) => x.wave === 'main');
     if (!main) return [];
-    const after = d.exercises.find((x) => x.wave === 'fsl') ? 'fsl' : 'volume';
-    return [{ dayId: id, exerciseId: settings.swaps[main.exerciseId] ?? main.exerciseId, after } as const];
+    const paired = d.exercises.find((x) => x.wave === 'paired');
+    if (paired) return [{ dayId: id, exerciseId: swap(main.exerciseId), after: 'paired' as const, pairedId: swap(paired.exerciseId) }];
+    const after = d.exercises.find((x) => x.wave === 'fsl') ? ('fsl' as const) : ('volume' as const);
+    return [{ dayId: id, exerciseId: swap(main.exerciseId), after }];
   });
 }

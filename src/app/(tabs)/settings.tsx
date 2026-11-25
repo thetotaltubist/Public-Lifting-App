@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Button, Card, Chip, Muted, styles, Title } from '../../components/ui';
 import { day } from '../../engine/exercises';
 import { blockWeek, isDeload, rotationFor } from '../../engine/plan';
-import { daysFor, goalFor, goalInfo, programFor } from '../../engine/programs';
+import { daysFor, goalFor, goalInfo, programFor, variantFor } from '../../engine/programs';
 import { defaultRest, formatClock, REST_GROUPS, REST_MAX, REST_MIN, restFor } from '../../engine/rest';
 import { colors } from '../../theme';
 import { RestGroup, Settings } from '../../engine/types';
@@ -186,7 +186,9 @@ export default function SettingsScreen() {
         <Card>
           <Text style={styles.h2}>Training block</Text>
           <Text style={[styles.body, { marginTop: 8 }]}>
-            {programFor(settings).name} · {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
+            {programFor(settings).name}
+            {programFor(settings).variants ? ` (${variantFor(programFor(settings), settings.programVariant)?.name})` : ''} ·{' '}
+            {goalInfo(goalFor(settings)).name} · {daysFor(settings)} days a week
           </Text>
           <Muted style={{ marginVertical: 8 }}>
             {deload
