@@ -35,8 +35,9 @@ export type DayTemplate = {
   name: string;
   // reps overrides the goal's rep range for this slot (5x5 is always 5)
   // wave: a main lift on the 4-week wave, or the lighter sets that follow it on the same lift:
-  // 5 sets of 10 (Strength + Size) or 5 sets of 5 at the first set's weight (Strength Waves). See wave.ts.
-  exercises: { exerciseId: string; baseSets: number; reps?: [number, number]; wave?: 'main' | 'volume' | 'fsl' }[];
+  // 5 sets of 10 (Strength + Size) or 5 sets of 5 at the first set's weight (Strength Waves).
+  // paired: 5 sets of 10 of another wave lift, from that lift's training max. See wave.ts.
+  exercises: { exerciseId: string; baseSets: number; reps?: [number, number]; wave?: 'main' | 'volume' | 'fsl' | 'paired' }[];
   painAreas?: string[]; // body parts offered for a pain rating; missing uses the day id
 };
 
@@ -86,6 +87,7 @@ export type Settings = {
   nextDayOverride: string | null;
   rotation?: string[]; // day ids in your own order; missing means the program's order
   program?: string; // program id; missing means Push / Pull / Legs
+  programVariant?: string; // a program's own option, like Strength Waves' paired 5 sets of 10; missing means the first
   goal?: Goal; // missing means hypertrophy
   daysPerWeek?: number; // how many days a week you plan to lift; missing means 5
   setupDone?: boolean; // finished the first-run setup; missing means not yet

@@ -4,7 +4,7 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { noItems } from '../components/BackButton';
 import { day } from '../engine/exercises';
-import { DAY_CHOICES, DAYS_GUIDANCE, daysFor, goalFor, goalInfo, GOALS, programFor, PROGRAMS, suggestPrograms } from '../engine/programs';
+import { DAY_CHOICES, DAYS_GUIDANCE, daysFor, goalFor, goalInfo, GOALS, programFor, PROGRAMS, suggestPrograms, variantFor } from '../engine/programs';
 import { Goal, Mode, Settings } from '../engine/types';
 import { loadSettings, updateSettings } from '../storage';
 import { colors } from '../theme';
@@ -21,6 +21,7 @@ export default function NewBlockScreen() {
   const [goal, setGoal] = useState<Goal>('hypertrophy');
   const [days, setDays] = useState(5);
   const [picked, setPicked] = useState<string | null>(null);
+  const [variant, setVariant] = useState<string | undefined>(undefined);
   const [showAll, setShowAll] = useState(false);
   const first = useLocalSearchParams<{ first?: string }>().first === '1';
   const [mode, setMode] = useState<Mode>('build');
@@ -34,6 +35,7 @@ export default function NewBlockScreen() {
         setGoal(goalFor(s));
         setDays(daysFor(s));
         setPicked(programFor(s).id);
+        setVariant(s.programVariant);
         setMode(s.mode);
         setUnit(s.unit);
         setPainCheck(s.painCheck !== false);
@@ -60,6 +62,7 @@ export default function NewBlockScreen() {
       goal,
       daysPerWeek: days,
       program: picked ?? fits[0].program.id,
+      programVariant: variant,
       // A different program starts from its own order and first day
       ...(picked !== current ? { rotation: undefined, nextDayOverride: null } : {}),
       blockStart: now,
@@ -90,6 +93,17 @@ export default function NewBlockScreen() {
             {p.short} · {p.fits[0] === p.fits[1] ? p.fits[0] : `${p.fits[0]}-${p.fits[1]}`} days
           </Muted>
           {selected && <Text style={[styles.body, { marginTop: 8 }]}>{p.guidance}</Text>}
+          {selected && p.variants && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={[styles.body, { fontWeight: '700' }]}>After the heavy sets</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                {p.variants.map((v) => (
+                  <Chip key={v.id} label={v.name} selected={variantFor(p, variant)?.id === v.id} onPress={() => setVariant(v.id)} />
+                ))}
+              </View>
+              <Muted>{variantFor(p, variant)?.short}</Muted>
+            </View>
+          )}
         </Card>
       </Pressable>
     );

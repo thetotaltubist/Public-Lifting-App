@@ -22,6 +22,9 @@ export type Program = {
   focus?: Goal; // built for this goal, so it ranks first for it
   fixedSets?: boolean; // keeps its own sets every session (5x5, Strength + Size, Strength Waves), no scaling or catch-up
   guidance: string;
+  // Options picked when the block starts, each with its own days. The
+  // first is the default.
+  variants?: { id: string; name: string; short: string; days: string[] }[];
 };
 
 export const PROGRAMS: Program[] = [
@@ -78,13 +81,28 @@ export const PROGRAMS: Program[] = [
     name: 'Strength Waves',
     short: 'Enter your maxes, and every set of the cycle is worked out',
     days: ['sw-press', 'sw-deadlift', 'sw-bench', 'sw-squat'],
+    variants: [
+      {
+        id: 'same',
+        name: '5 × 5, same lift',
+        short: "5 sets of 5 of the day's main lift at your first heavy set's weight. Less work, suits a busy week or a cut.",
+        days: ['sw-press', 'sw-deadlift', 'sw-bench', 'sw-squat'],
+      },
+      {
+        id: 'paired',
+        name: '5 × 10, paired lift',
+        short:
+          '5 sets of 10 of the partner lift (bench after press, squat after deadlift, and the other way round) at 50-60% of its training max, plus 5 sets of 10 pulldowns or 5 sets of abs. More work, builds more muscle.',
+        days: ['swp-press', 'swp-deadlift', 'swp-bench', 'swp-squat'],
+      },
+    ],
     fits: [3, 4],
     ideal: [4],
     goals: ['strength'],
     focus: 'strength',
     fixedSets: true,
     guidance:
-      'The classic 4-week strength cycle on shoulder press, deadlift, bench and squat. Enter a 1 rep max or a training max for each lift and the app works out every set of the cycle. Each day has 3 heavy sets: sets of 5 in week 1, sets of 3 in week 2, then 5, 3 and 1 in week 3, with as many good reps as you can on the last set. Week 4 is light. After the heavy sets come 5 sets of 5 at your first set\'s weight, then a little assistance work. Your training max goes up 5 lb for upper body lifts and 10 lb for lower body after each cycle where the last sets made their reps. Less volume than Strength + Size, so it suits a busy week or a cut.',
+      'The classic 4-week strength cycle on shoulder press, deadlift, bench and squat. Enter a 1 rep max or a training max for each lift and the app works out every set of the cycle. Each day has 3 heavy sets: sets of 5 in week 1, sets of 3 in week 2, then 5, 3 and 1 in week 3, with as many good reps as you can on the last set. Week 4 is light. After the heavy sets you pick one of two: 5 sets of 5 at your first set\'s weight with a little assistance work, or 5 sets of 10 of a partner lift (bench after press, squat after deadlift) with 5 sets of pulldowns or abs. Your training max goes up 5 lb for upper body lifts and 10 lb for lower body after each cycle where the last sets made their reps. The 5 sets of 5 is less work, so it suits a busy week or a cut.',
   },
   {
     id: 'hybrid',
@@ -130,8 +148,15 @@ export function program(id: string | undefined): Program {
   return PROGRAMS.find((p) => p.id === id) ?? PROGRAMS.find((p) => p.id === DEFAULT_PROGRAM)!;
 }
 
+// The program with your chosen option's days
 export function programFor(settings: Settings): Program {
-  return program(settings.program);
+  const p = program(settings.program);
+  const v = variantFor(p, settings.programVariant);
+  return v ? { ...p, days: v.days } : p;
+}
+
+export function variantFor(p: Program, id: string | undefined) {
+  return p.variants?.find((v) => v.id === id) ?? p.variants?.[0];
 }
 
 export function goalFor(settings: Settings): Goal {

@@ -99,7 +99,7 @@ export const SCIENCE: { title: string; body: string; strength: 'Strong' | 'Moder
     title: 'Strength Waves and your own training maxes',
     strength: 'Moderate',
     body:
-      'Strength Waves uses the same 4-week wave and training max as Strength + Size, but follows the heavy sets with 5 sets of 5 at the first heavy set\'s weight instead of 5 sets of 10. That is fewer weekly sets, which still builds strength well, since strength levels off with fewer sets than size does, so it suits a busy week or a cut. You can enter a 1 rep max or a training max for each lift. A typed 1 rep max becomes a training max of 90% of it, so the heavy sets start a little easy and the last set has room for extra reps. From then on the training max moves with the sets you log, the same way as Strength + Size.',
+      'Strength Waves uses the same 4-week wave and training max as Strength + Size, but follows the heavy sets with 5 sets of 5 at the first heavy set\'s weight instead of 5 sets of 10. That is fewer weekly sets, which still builds strength well, since strength levels off with fewer sets than size does, so it suits a busy week or a cut. Or you can pick 5 sets of 10 of a partner lift instead (bench after press, squat after deadlift, and the other way round) at 50-60% of that lift\'s training max, which adds the weekly volume that builds muscle, the same idea as Strength + Size. You can enter a 1 rep max or a training max for each lift. A typed 1 rep max becomes a training max of 90% of it, so the heavy sets start a little easy and the last set has room for extra reps. From then on the training max moves with the sets you log, the same way as Strength + Size.',
   },
   {
     title: 'Warm-up sets',

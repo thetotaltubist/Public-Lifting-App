@@ -84,7 +84,10 @@ export default function TrainingMaxScreen() {
 
       {lifts.map((l) => {
         const e = exercise(l.exerciseId);
-        const cycle = l.tm != null ? cycleFor(l.tm, l.after) : null;
+        // The partner lift's training max, as typed here or as it stands
+        const partner = l.pairedId ? lifts.find((x) => x.exerciseId === l.pairedId) : undefined;
+        const pairedName = l.pairedId ? exercise(l.pairedId).name : '';
+        const cycle = l.tm != null ? cycleFor(l.tm, l.after, partner?.tm ?? null) : null;
         return (
           <Card key={l.dayId}>
             <Text style={styles.h2}>{e.name}</Text>
@@ -129,7 +132,11 @@ export default function TrainingMaxScreen() {
                       <Text style={[styles.body, { fontVariant: ['tabular-nums'], marginTop: 2 }]}>{setLine(w.sets)}</Text>
                       <Muted style={{ fontSize: 13 }}>
                         {w.after
-                          ? `Then ${w.after.sets} × ${w.after.reps} at ${show(w.after.weight)} ${unit}`
+                          ? l.after === 'paired'
+                            ? w.after.weight != null
+                              ? `Then ${w.after.sets} × ${w.after.reps} ${pairedName} at ${show(w.after.weight)} ${unit}`
+                              : `Then ${w.after.sets} × ${w.after.reps} ${pairedName}, once it has a training max`
+                            : `Then ${w.after.sets} × ${w.after.reps} at ${show(w.after.weight)} ${unit}`
                           : w.week === LIGHT_WEEK
                             ? 'Light week, nothing after'
                             : ''}

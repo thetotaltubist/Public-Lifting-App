@@ -41,11 +41,14 @@ export default function ProgramScreen() {
       </Muted>
       {programFor(settings).days.map(day).map((d) => {
         const inDay = d.exercises.map((x) => settings.swaps[x.exerciseId] ?? x.exerciseId);
+        const paired = d.exercises.find((y) => y.wave === 'paired');
+        const pairedName = paired ? exercise(settings.swaps[paired.exerciseId] ?? paired.exerciseId).name.toLowerCase() : '';
         return (
           <Card key={d.id}>
             <Text style={[styles.h2, { marginBottom: 6 }]}>{d.name}</Text>
             {/* The 5 sets of 10 (or 5 sets of 5) follow their main lift, so they're replaced with it */}
-            {d.exercises.filter((x) => x.wave !== 'volume' && x.wave !== 'fsl').map((x) => {
+            {/* A partner lift's 5 sets of 10 change with that lift on its own day */}
+            {d.exercises.filter((x) => x.wave !== 'volume' && x.wave !== 'fsl' && x.wave !== 'paired').map((x) => {
               const slot = x.exerciseId;
               const current = exercise(settings.swaps[slot] ?? slot);
               const swapped = settings.swaps[slot] != null;
@@ -64,7 +67,9 @@ export default function ProgramScreen() {
                         {x.wave === 'main'
                           ? d.exercises.some((y) => y.wave === 'fsl')
                             ? ' · heavy sets, then 5 sets of 5'
-                            : ' · heavy sets, then 5 sets of 10'
+                            : d.exercises.some((y) => y.wave === 'paired')
+                              ? ` · heavy sets, then 5 sets of 10 ${pairedName}`
+                              : ' · heavy sets, then 5 sets of 10'
                           : ''}
                         {swapped ? ` · replaces ${exercise(slot).name}` : ''}
                       </Muted>
