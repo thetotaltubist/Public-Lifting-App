@@ -16,8 +16,9 @@ import { LIGHT_WEEK, PlannedSet, planWave } from './wave';
 //    how often that muscle comes up in a week: how many of the program's
 //    days train it, times the days a week you plan to lift. Plan 6 and
 //    lift 4, and the muscles that fell behind get catch-up sets.
-//    Fixed programs (5x5, Strength + Size) keep their own sets and skip
-//    catch-up. Strength + Size main lifts follow a 4-week wave (wave.ts).
+//    Fixed programs (5x5, Strength + Size, Strength Waves) keep their own sets and
+//    skip catch-up. Strength + Size and Strength Waves main lifts follow a 4-week
+//    wave (wave.ts).
 // 3. If a muscle is behind (missed days), add catch-up sets: at most 3 per
 //    muscle per session, and never more than 10 for one muscle in a
 //    session. The rest carries to the next time that muscle comes up.
@@ -55,7 +56,7 @@ export type PlannedExercise = {
   repMax?: number;
   rirTarget: string;
   suggestion: Suggestion;
-  setPlan?: PlannedSet[]; // weight and reps for each set, when they differ (Strength + Size)
+  setPlan?: PlannedSet[]; // weight and reps for each set, when they differ (Strength + Size, Strength Waves)
   trainingMax?: number; // lb, Strength + Size main lifts
   waveWeek?: number;
 };
@@ -305,7 +306,7 @@ export function planNext(sessions: Session[], settings: Settings, now = new Date
       suggestion: suggest(s.exerciseId, all, { comeback, deload, goal, reps: s.reps }),
     };
   });
-  // The 5 sets of 10 drop out in the light week
+  // The 5 sets of 10 (or 5 sets of 5) drop out in the light week
   const exercises = planned.filter((e) => e.sets > 0);
 
   const notes: string[] = [];

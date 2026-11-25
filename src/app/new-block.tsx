@@ -3,7 +3,8 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, Chip, Muted, styles } from '../components/ui';
 import { noItems } from '../components/BackButton';
-import { DAY_CHOICES, DAYS_GUIDANCE, daysFor, goalFor, goalInfo, GOALS, programFor, suggestPrograms } from '../engine/programs';
+import { day } from '../engine/exercises';
+import { DAY_CHOICES, DAYS_GUIDANCE, daysFor, goalFor, goalInfo, GOALS, programFor, PROGRAMS, suggestPrograms } from '../engine/programs';
 import { Goal, Mode, Settings } from '../engine/types';
 import { loadSettings, updateSettings } from '../storage';
 import { colors } from '../theme';
@@ -65,7 +66,12 @@ export default function NewBlockScreen() {
       deloadStart: null,
       ...(first ? { mode, unit, painCheck, setupDone: true } : {}),
     });
+    // A wave program (Strength Waves, Strength + Size) asks for training maxes next.
+    // The first time, the home screen asks instead.
+    const chosen = PROGRAMS.find((p) => p.id === (picked ?? fits[0].program.id));
+    const waves = !!chosen?.days.some((id) => day(id).exercises.some((x) => x.wave === 'main'));
     if (first) router.replace('/');
+    else if (waves) router.replace('/training-max');
     else router.back();
   }
 

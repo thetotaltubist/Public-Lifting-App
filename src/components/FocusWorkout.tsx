@@ -10,6 +10,8 @@ import { PlannedExercise } from '../engine/plan';
 import { fromDisplay, toDisplay } from '../storage';
 import { colors } from '../theme';
 import type { Rest } from './RestTimer';
+import WarmUps from './WarmUps';
+import { PlannedSet } from '../engine/wave';
 
 // ------------------------------------------------------------------
 // Focus mode: one exercise fills the screen, with big numbers and one
@@ -30,6 +32,8 @@ type Props = {
   changeSet: (i: number, j: number, change: Partial<LoggedSet>) => void;
   completeSet: (i: number, j: number, fill: Partial<LoggedSet>) => void;
   changeExercise: (i: number, change: (ex: LoggedExercise) => LoggedExercise) => void;
+  warmUps: PlannedSet[][]; // per exercise; empty when warm-ups are off
+  toggleWarmUp: (i: number, k: number) => void;
   painAreas: string[];
   changeRest: (r: Rest) => void;
   stopRest: () => void;
@@ -231,6 +235,13 @@ export default function FocusWorkout(p: Props) {
             <Text style={{ color: colors.muted, fontSize: 15, flex: 1 }}>{muscles}</Text>
             <LinkText label="Swap" onPress={() => p.swap(i)} accent />
           </View>
+
+          {/* Warm-ups until the first working set is done */}
+          {set && j === 0 && (p.warmUps[i]?.length ?? 0) > 0 && (
+            <View style={[card, { marginTop: 22, padding: 16 }]}>
+              <WarmUps sets={p.warmUps[i]} done={ex.warmUpsDone ?? []} unit={unit} onToggle={(k) => p.toggleWarmUp(i, k)} large />
+            </View>
+          )}
 
           {set ? (
             <View style={[card, { marginTop: 22, paddingVertical: 20, paddingHorizontal: 16 }]}>

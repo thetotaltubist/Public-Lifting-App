@@ -34,8 +34,9 @@ export type DayTemplate = {
   id: string;
   name: string;
   // reps overrides the goal's rep range for this slot (5x5 is always 5)
-  // wave: a main lift on the Strength + Size wave, or its 5 sets of 10 (see wave.ts)
-  exercises: { exerciseId: string; baseSets: number; reps?: [number, number]; wave?: 'main' | 'volume' }[];
+  // wave: a main lift on the 4-week wave, or the lighter sets that follow it on the same lift:
+  // 5 sets of 10 (Strength + Size) or 5 sets of 5 at the first set's weight (Strength Waves). See wave.ts.
+  exercises: { exerciseId: string; baseSets: number; reps?: [number, number]; wave?: 'main' | 'volume' | 'fsl' }[];
   painAreas?: string[]; // body parts offered for a pain rating; missing uses the day id
 };
 
@@ -53,8 +54,9 @@ export type LoggedExercise = {
   pain?: number | null; // 0-10, joint or muscle pain during this exercise
   painArea?: string | null; // where it hurt, e.g. 'Shoulder'
   shoulderPain?: number | null; // older logs, before pain covered any joint or muscle
-  trainingMax?: number; // lb, Strength + Size main lifts only
-  waveWeek?: number; // 0-3, Strength + Size main lifts only
+  trainingMax?: number; // lb, wave main lifts only (Strength + Size, Strength Waves)
+  waveWeek?: number; // 0-3, wave main lifts only
+  warmUpsDone?: number[]; // warm-up sets checked off during the workout, by index; not saved with the session
 };
 
 export type Session = {
@@ -90,4 +92,8 @@ export type Settings = {
   painCheck?: boolean; // ask for a 0-10 pain rating after each exercise; missing means on
   rest?: Partial<Record<RestGroup, number>>; // your own rest in seconds per group; missing means the default
   workoutView?: 'list' | 'focus'; // how the workout screen looks; missing means the list
+  warmUps?: boolean; // show warm-up sets before the working sets; missing means off
+  // Training maxes you typed in, per exercise id (lb). Wave lifts start from
+  // these and progress from your logged sets after setAt.
+  trainingMaxes?: Record<string, { lb: number; setAt: string }>;
 };
